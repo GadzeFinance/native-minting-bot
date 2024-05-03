@@ -1,4 +1,4 @@
-import { L2SyncPool } from "./abis";
+import L2SyncPool from "./abis/L2SyncPool.json";
 import { BigNumber, ethers, utils, providers } from "ethers";
 import { ChainInfo, chains } from "./chains/config";
 
@@ -11,7 +11,7 @@ export async function handler(): Promise<void> {
 
       await performFastSync(chain);
 
-      // await performSlowSync(chain);
+      // await c(chain);
     }
 
     console.log('All transactions completed successfully.');
@@ -23,8 +23,6 @@ export async function handler(): Promise<void> {
 
 // if the given L2 `syncPool` contract has over 1000 ETH, execute the `fast-sync` 
 async function performFastSync(chain: ChainInfo): Promise<void> {
-
-  console.log(`Executing fast sync for chain: ${chain.name}.`);
 
   const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
 

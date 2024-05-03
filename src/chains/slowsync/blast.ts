@@ -1,5 +1,6 @@
 import { CrossChainMessenger } from '@eth-optimism/sdk';
-import { constants, Wallet, Contract, providers } from 'ethers';
+import { constants, Wallet } from 'ethers';
+import { fetchOPBridgeTxs, proveOrRelayMessage } from '../helpers';
 import { PRIVATE_KEY, chains, mainnetWallet } from '../config';
 
 // configuring blast contracts
@@ -8,6 +9,8 @@ const L1CrossDomainMessenger = '0x5D4472f31Bd9385709ec61305AFc749F0fA8e9d0';
 const L1StandardBridge = '0x697402166Fbf2F22E970df8a6486Ef171dbfc524'; 
 const OptimismPortal = '0x0Ec68c5B10F21EFFb74f2A5C61DFe6b08C0Db6Cb';
 const L2OutputOracle = '0x826D1B0D4111Ad9146Eb8941D7Ca2B6a44215c76';
+
+const blastL2MessengerAddress = '0x4200000000000000000000000000000000000007'; 
 
 // configure the blast messenger
 const blastMessager = new CrossChainMessenger({
@@ -34,6 +37,12 @@ const blastMessager = new CrossChainMessenger({
 });
 
 export async function blastSlowSync(): Promise<void> {
-    // fetch logs from the blast chain
+    // todo: decide on how to prune state
+    const startBlockInitial = 2612000;
 
+    const withdrawalTxs = await fetchOPBridgeTxs(startBlockInitial, blastL2MessengerAddress, chains[0].provider);
+
+    for (const txHash of withdrawalTxs) {
+        await proveOrRelayMessage(txHash, blastMessager, chains[0].provider);
+    }
 }
