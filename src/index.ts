@@ -5,6 +5,7 @@ interface ChainInfo {
   name: string;
   provider: ethers.providers.JsonRpcProvider;
   syncPoolAddress: string;
+  ethAddress: string;
 }
 
 const chains: ChainInfo[] = [
@@ -12,11 +13,25 @@ const chains: ChainInfo[] = [
     name: 'Blast',
     provider: new ethers.providers.JsonRpcProvider('https://blast-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52'),
     syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
+    ethAddress: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
   },
   {
     name: 'Mode',
-    provider: 'https://mainnet.mode.network',
+    provider: new ethers.providers.JsonRpcProvider('https://mainnet.mode.network'),
     syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
+    ethAddress: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  {
+    name: 'Base',
+    provider: new ethers.providers.JsonRpcProvider('https://base-mainnet.g.alchemy.com/v2/tb6jud_eQqvR2JK8NoUlLIoBf9P-oqd-'),
+    syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
+    ethAddress: "0x0"
+  },
+  {
+    name: 'linea',
+    provider: new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52'),
+    syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
+    ethAddress: "0x0"
   },
 ];
 
@@ -25,15 +40,13 @@ export async function handler(): Promise<void> {
   try {
     console.log('Lambda function has started execution.');
 
-    const chainClients = setupChainClients();
-
-    for (const chain of chainClients) {
-      console.log(`Processing transactions for chain: ${chain.chainType}.`)
+    for (const chain of chains) {
+      console.log(`Processing transactions for chain: ${chain.name}.`)
 
     
       await performFastSync(chain);
 
-      await performSlowSync(chain);
+      // await performSlowSync(chain);
     }
 
     console.log('All transactions completed successfully.');
@@ -43,12 +56,30 @@ export async function handler(): Promise<void> {
   }
 }
 
-async function performFastSync(chain: ChainClient): Promise<void> {
+async function performFastSync(chain: ChainInfo): Promise<void> {
 
-  
+  console.log(`Executing fast sync for chain: ${chain.name}.`);
 
-  console.log(`Starting fast sync for chain: ${chain.chainType}.`);
+  const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
 
-  // Perform fast sync operations here
+  if (syncPoolBalance.gt(ethers.utils.parseEther("1000"))) {
+    console.log(`Executing fast sync for chain: ${chain.name}.`);
+
+    const contract = new ethers.Contract(chain.syncPoolAddress, L2SyncPool, chain.provider);
+
+    const extraOptions = ethers.utils.arrayify("0x");
+    const fee = {
+      nativeFee: ethers.utils.parseEther("0"),
+      tokenFee: ethers.utils.parseEther("0")
+    }
+
+    try {
+      const txResponse = await contract.sync(chain.ethAddress, extraOptions, fee);
+      const receipt = await txResponse.wait();
+      console.log(`Transaction successful with hash: ${receipt.transactionHash}`);
+    } catch (error) {
+      console.error(`Failed to execute sync: ${error}`);
+    }
+  }
 }
 
