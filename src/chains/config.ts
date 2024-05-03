@@ -1,4 +1,7 @@
-import { providers } from 'ethers';
+import { providers, Wallet } from 'ethers';
+require('dotenv').config();
+
+export const PRIVATE_KEY: string = process.env.PRIVATE_KEY!;
 
 export interface ChainInfo {
   name: string;
@@ -32,7 +35,9 @@ export const chains: ChainInfo[] = [
     syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
     ethAddress: "0x0" 
   },
+  // Add more chains here
 ];
 
 // Mainnet configs
 export const mainnetProvider = new providers.JsonRpcProvider('https://mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52');
+export const mainnetWallet = new Wallet(PRIVATE_KEY, mainnetProvider);

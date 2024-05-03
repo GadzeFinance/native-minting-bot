@@ -1,5 +1,6 @@
 import { CrossChainMessenger } from '@eth-optimism/sdk';
-import { constants } from 'ethers';
+import { constants, Wallet, Contract, providers } from 'ethers';
+import { PRIVATE_KEY, chains, mainnetWallet } from '../config';
 
 // configuring blast contracts
 const AddressManager = '0xE064B565Cf2A312a3e66Fe4118890583727380C0';
@@ -12,8 +13,9 @@ const L2OutputOracle = '0x826D1B0D4111Ad9146Eb8941D7Ca2B6a44215c76';
 const blastMessager = new CrossChainMessenger({
     l1ChainId: 1,
     l2ChainId: 81457,
-    l1SignerOrProvider: l1Wallet,
-    l2SignerOrProvider: l2Wallet,
+    // chain[0] is the blast chain
+    l1SignerOrProvider: new Wallet(PRIVATE_KEY, chains[0].provider),
+    l2SignerOrProvider: mainnetWallet,
 
     contracts: {
         l1: {
@@ -30,3 +32,8 @@ const blastMessager = new CrossChainMessenger({
         }
     }
 });
+
+export async function blastSlowSync(): Promise<void> {
+    // fetch logs from the blast chain
+
+}

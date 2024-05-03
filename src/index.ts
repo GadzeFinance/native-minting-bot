@@ -7,8 +7,8 @@ export async function handler(): Promise<void> {
     console.log('Lambda function has started execution.');
 
     for (const chain of chains) {
-      console.log(`Processing transactions for chain: ${chain}.`)
-      
+      console.log(`Processing transactions for chain: ${chain.name}.`)
+
       await performFastSync(chain);
 
       // await performSlowSync(chain);
@@ -22,9 +22,9 @@ export async function handler(): Promise<void> {
 }
 
 // if the given L2 `syncPool` contract has over 1000 ETH, execute the `fast-sync` 
-async function performFastSync(chain: string): Promise<void> {
+async function performFastSync(chain: ChainInfo): Promise<void> {
 
-  console.log(`Executing fast sync for chain: ${name}.`);
+  console.log(`Executing fast sync for chain: ${chain.name}.`);
 
   const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
 
