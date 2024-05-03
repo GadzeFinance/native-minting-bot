@@ -37,7 +37,6 @@ project-root/
 │   └── abis/              # All contract ABIS
 │       ├── Contract1.json
 │       ├── Contract2.json
-        └── ...
-│
+│       └── ...
 └── dist/                  # Compiled JavaScript files to be deployed to lambda
 ```
