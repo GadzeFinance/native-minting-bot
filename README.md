@@ -16,7 +16,7 @@ After `fast-sync` sends ETH to the L2 canonical bridge and the sequencer submits
 - Wait 7 to 14 days (variable for each L2) for the challenge period to pass.
 - Submit a relay transaction.
 
-For an optimisitic rollup like an OP stack chain the transaction moves through these 5 states: 
+For an optimisitic rollup like an OP stack chain the transaction lifecycle consists these 5 states: <br>
 Waiting for state root -> Ready to prove -> In challenge period -> Ready for relay -> Relayed
 
 ## Repo Structure
