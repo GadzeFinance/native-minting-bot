@@ -15,7 +15,8 @@ After `fast-sync` sends ETH to the L2 canonical bridge and the sequencer submits
 - Submit a proof of withdrawal transaction.
 - Wait 7 to 14 days (variable for each L2) for the challenge period to pass.
 - Submit a relay transaction.
-For an optimisitic rollup like an OP stack chain the transaction moves through these 5 states:
+
+For an optimisitic rollup like an OP stack chain the transaction moves through these 5 states: 
 Waiting for state root -> Ready to prove -> In challenge period -> Ready for relay -> Relayed
 
 ## Repo Structure
@@ -23,30 +24,20 @@ Waiting for state root -> Ready to prove -> In challenge period -> Ready for rel
 project-root/
 │
 ├── src/                   # Source files
-│   ├── bot/               # Core bot functionality
-│   │   └── index.ts       # Entry point for the bot logic
+│   ├── index.ts           # Entry point for the bot logic and contains the `fastsync` logic
 │   │
-│   ├── chains/            # Chain-specific logic and configurations
-│   │   ├── index.ts       # Export configured chain instances
-│   │   ├── chainConfig.ts # Configurations for different chains
-│   │   └── helpers/       # Helpers specific to blockchain operations
-│   │       ├── logs.ts    # Helpers to handle blockchain logs
-│   │       └── tx.ts      # Helpers to manage transactions
-│   │
-│   ├── config/            # General configuration files
-│   │   ├── index.ts       # Aggregate and export configs
-│   │   └── rpcs.ts        # RPC URLs and related settings
-│   │
-│   └── abis/          
+│   ├── chains/            # Chain-specific logic
+│   │   ├── index.ts       # Entry point for slowsync for all chains
+│   │   ├── chainConfig.ts # Configurations for each chain
+|   |   ├── helpers.ts     # stores the OP stack helper functions for `slowsync`
+│   │   └── slowsync/      # holds a file with the `slowsync` logic for each chain 
+│   │       ├── Blast.ts   
+│   │       ├── Mode.ts      
+│   │       └── ...
+│   └── abis/              # All contract ABIS
 │       ├── Contract1.json
 │       ├── Contract2.json
-│       └── index.ts       # Export ABIs for easy import elsewhere
+        └── ...
 │
-├── dist/                  # Compiled JavaScript files
-├── node_modules/          # npm packages
-├── test/                  # Test files
-│
-├── package.json           # Node.js dependencies and scripts
-├── tsconfig.json          # TypeScript configuration
-└── README.md              # Project overview and setup instructions
+└── dist/                  # Compiled JavaScript files to be deployed to lambda
 ```
