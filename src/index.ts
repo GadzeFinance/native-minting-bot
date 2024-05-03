@@ -1,6 +1,7 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
 import { BigNumber, ethers, utils, providers } from "ethers";
 import { ChainInfo, chains } from "./chains/config";
+import { performSlowSync } from "./chains";
 
 export async function handler(): Promise<void> {
   try {
@@ -11,7 +12,7 @@ export async function handler(): Promise<void> {
 
       await performFastSync(chain);
 
-      // await c(chain);
+      await performSlowSync(chain);
     }
 
     console.log('All transactions completed successfully.');
