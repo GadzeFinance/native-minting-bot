@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@eth-optimism/sdk": "^3.3.0",
+    "eth-optimism/sdk": "^3.3.0",
     "dotenv": "^16.4.5",
     "ethers": "^5"
   },
