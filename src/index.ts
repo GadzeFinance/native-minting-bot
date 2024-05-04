@@ -1,5 +1,5 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
-import { BigNumber, ethers, utils, providers } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { ChainInfo, chains } from "./chains/config";
 import { performSlowSync } from "./chains";
 

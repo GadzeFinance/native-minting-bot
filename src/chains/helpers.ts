@@ -1,4 +1,4 @@
-import { providers, Contract, utils } from 'ethers';
+import { providers, Contract } from 'ethers';
 import L2CrossDomainMessagerABI from '../abis/L2CrossDomainMessager.json';
 import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
 
