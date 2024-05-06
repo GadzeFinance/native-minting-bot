@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../helpers';
-import { ChainInfo, PRIVATE_KEY, chains } from '../config';
+import { ChainInfo, PRIVATE_KEY } from '../config';
 
 // Mode Contracts
 const ADDRESS_MANAGER = '';
@@ -8,14 +8,14 @@ const L1_CROSS_DOMAIN_MESSENGER = '';
 const L1_STANDARD_BRIDGE = '';
 const OPTIMISM_PORTAL = '';
 const L2_OUTPUT_ORACLE = '';
-const MODE_L2_MESSENGER_ADDRESS = '';
+const MODE_L2_MESSENGER_ADDRESS = '0xC0d3c0d3c0D3c0D3C0d3C0D3C0D3c0d3c0d30007';
 
 const MODE_CHAIN_ID = 34443;
 
 
 export async function modeSlowSync(chain: ChainInfo): Promise<void> {
     // todo: decide on how to prune state
-    const startBlockInitial = 2612000;
+    const startBlockInitial = 6929000;
 
     const modeMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: MODE_CHAIN_ID,

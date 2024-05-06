@@ -1,5 +1,5 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
-import { BigNumber, ethers, utils } from "ethers";
+import { ethers, utils } from "ethers";
 import { ChainInfo, chains } from "./chains/config";
 import { performSlowSync } from "./chains";
 
@@ -10,7 +10,7 @@ export async function handler(): Promise<void> {
     for (const chain of chains) {
       console.log(`Processing transactions for chain: ${chain.name}.`)
 
-      // await performFastSync(chain);
+      await performFastSync(chain);
 
       await performSlowSync(chain);
     }
@@ -30,18 +30,31 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
   if (syncPoolBalance.gt(ethers.utils.parseEther("1000"))) {
     console.log(`Executing fast sync for chain: ${chain.name}.`);
 
-    const contract = new ethers.Contract(chain.syncPoolAddress, L2SyncPool, chain.provider);
+    const syncPool = new ethers.Contract(chain.syncPoolAddress, L2SyncPool, chain.provider);
+    const syncPoolWithSigner = syncPool.connect(chain.wallet);
 
-    const nativeFee = await calculateLzFee();
+    // params for the quote call 
+    const tokenIn = chain.ethAddress;
+    const extraOptions = utils.arrayify("0x");
+    const payInLzToken = false;
 
-    const extraOptions = ethers.utils.arrayify("0x");
+    const quoteResponse = await syncPool.quoteSync(tokenIn, extraOptions, payInLzToken);
+
+    const [nativeFeeRaw, tokenFeeRaw] = quoteResponse;
+
     const fee = {
-      nativeFee,
-      tokenFee: ethers.utils.parseEther("0")
+      nativeFee: nativeFeeRaw,
+      lzTokenFee: tokenFeeRaw
     }
 
+    console.log(`Native Fee Raw: ${nativeFeeRaw}`);  // Log the raw input
+    console.log(`Native Fee in Wei: ${fee.nativeFee.toString()}`);  // Log the converted wei value
+
+
     try {
-      const txResponse = await contract.sync(chain.ethAddress, extraOptions, fee);
+      const txResponse = await syncPoolWithSigner.sync(chain.ethAddress, extraOptions, fee, {
+        value: fee.nativeFee
+      });
       const receipt = await txResponse.wait();
       console.log(`Transaction successful with hash: ${receipt.transactionHash}`);
     } catch (error) {
@@ -51,11 +64,5 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
     console.log(`Skipping fast sync for chain: ${chain.name}. Only has ${utils.formatEther(syncPoolBalance)} ETH in the liquidity pool`);
   }
 }
-
-// calculates the fee for the execution of the `fast-sync` on mainnet
-async function calculateLzFee(): Promise<BigNumber> {
-  return ethers.utils.parseEther("0.1");
-}
-
 
 handler();

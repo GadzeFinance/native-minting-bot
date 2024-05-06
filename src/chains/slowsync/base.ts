@@ -3,14 +3,13 @@ import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs,
 import { ChainInfo, PRIVATE_KEY } from '../config';
 
 // Configuring base contracts
-const ADDRESS_MANAGER = '0x';
-const L1_CROSS_DOMAIN_MESSENGER = '0x';
-const L1_STANDARD_BRIDGE = '0x'; 
-const OPTIMISM_PORTAL = '0x';
-const L2_OUTPUT_ORACLE = '0x';
-
-const BASE_L2_MESSENGER_ADDRESS = '0x'; 
-const BASE_CHAIN_ID = 8453;  // Assuming chain ID needs to be defined as a constant
+const ADDRESS_MANAGER = '0x8EfB6B5c4767B09Dc9AA6Af4eAA89F749522BaE2';
+const L1_CROSS_DOMAIN_MESSENGER = '0x866E82a600A1414e583f7F13623F1aC5d58b0Afa';
+const L1_STANDARD_BRIDGE = '0x3154Cf16ccdb4C6d922629664174b904d80F2C35'; 
+const OPTIMISM_PORTAL = '0x49048044D57e1C92A77f79988d21Fa8fAF74E97e';
+const L2_OUTPUT_ORACLE = '0x56315b90c40730925ec5485cf004d835058518A0';
+const BASE_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007'; 
+const BASE_CHAIN_ID = 8453; 
 
 export async function baseSlowSync(chain: ChainInfo): Promise<void> {
     // TODO: Decide on how to prune state

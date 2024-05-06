@@ -1,6 +1,5 @@
-import { Wallet } from 'ethers';
 import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../helpers';
-import { ChainInfo, PRIVATE_KEY, chains } from '../config';
+import { ChainInfo } from '../config';
 
 // Configuring Blast Contracts
 const ADDRESS_MANAGER = '0xE064B565Cf2A312a3e66Fe4118890583727380C0';
@@ -17,7 +16,7 @@ export async function blastSlowSync(chain: ChainInfo): Promise<void> {
 
     const blastMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: BLAST_CHAIN_ID,
-        l2Signer: new Wallet(PRIVATE_KEY, chain.provider),
+        l2Signer: chain.wallet,
         addressManager: ADDRESS_MANAGER,
         l1CrossDomainMessenger: L1_CROSS_DOMAIN_MESSENGER,
         l1StandardBridge: L1_STANDARD_BRIDGE,

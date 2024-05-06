@@ -1,4 +1,4 @@
-import { providers, Contract, constants, Wallet } from 'ethers';
+import { providers, Contract, constants, Wallet, utils } from 'ethers';
 import L2CrossDomainMessengerABI from '../abis/L2CrossDomainMessenger.json';
 import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
 import { mainnetWallet } from './config';
@@ -66,6 +66,13 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
           };
     
           const logs = await l2Provider.getLogs(filter);
+          let totalValue = 0;
+            logs.forEach((log) => {
+              const event = l2BridgeContract.interface.parseLog(log);
+              console.log(`Transaction Hash: ${log.transactionHash}`);
+              console.log(`Value: ${event.args.value.toString()}`);
+              totalValue += parseInt(utils.formatEther(event.args.value.toString()));
+          });
           console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
           logs.forEach((log) => {
             hashes.push(log.transactionHash);
