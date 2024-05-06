@@ -10,7 +10,7 @@ export async function handler(): Promise<void> {
     for (const chain of chains) {
       console.log(`Processing transactions for chain: ${chain.name}.`)
 
-      await performFastSync(chain);
+      // await performFastSync(chain);
 
       await performSlowSync(chain);
     }
@@ -48,11 +48,14 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
       console.error(`Failed to execute sync: ${error}`);
     }
   } else {
-    console.log(`Skipping fast sync for chain: ${chain.name}. Only has ${utils.formatEther(syncPoolBalance)} ETH in the lquidity pool`);
+    console.log(`Skipping fast sync for chain: ${chain.name}. Only has ${utils.formatEther(syncPoolBalance)} ETH in the liquidity pool`);
   }
 }
 
-// caclucates the fee for the execution of the `fast-sync` on mainnet
+// calculates the fee for the execution of the `fast-sync` on mainnet
 async function calculateLzFee(): Promise<BigNumber> {
   return ethers.utils.parseEther("0.1");
 }
+
+
+handler();
