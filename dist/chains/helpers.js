@@ -33,13 +33,13 @@ function CreateCrossChainMessenger(chainConfig) {
 exports.CreateCrossChainMessenger = CreateCrossChainMessenger;
 // The OP stack sdk methods for proving and relaying withdraws take the transaction hashes that initiated the withdraw as input. This function fetches
 // all such hashes for a given L2 from a given `initialStartBlock`.
-async function fetchOPBridgeTxs(initialStartBlock, l2MessengerAddress, l2Provider) {
+async function fetchOPBridgeTxs(initialStartBlock, l2MessengerAddress, chain) {
     // todo: potentially make this configurable?
     const blockInterval = 50000;
-    const l2BridgeContract = new ethers_1.Contract(l2MessengerAddress, L2CrossDomainMessenger_json_1.default, l2Provider);
+    const l2BridgeContract = new ethers_1.Contract(l2MessengerAddress, L2CrossDomainMessenger_json_1.default, chain.provider);
     let hashes = [];
     try {
-        const latestBlockNumber = await l2Provider.getBlockNumber();
+        const latestBlockNumber = await chain.provider.getBlockNumber();
         for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
             let endBlock = startBlock + blockInterval - 1;
             if (endBlock > latestBlockNumber) {
@@ -50,12 +50,12 @@ async function fetchOPBridgeTxs(initialStartBlock, l2MessengerAddress, l2Provide
                 topics: [
                     // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
                     l2BridgeContract.filters.SentMessageExtension1().topics[0],
-                    "0x00000000000000000000000052c4221cb805479954cde5accff8c4dcaf96623b"
+                    ethers_1.utils.hexZeroPad(chain.syncPoolAddress, 32),
                 ],
                 fromBlock: startBlock,
                 toBlock: endBlock
             };
-            const logs = await l2Provider.getLogs(filter);
+            const logs = await chain.provider.getLogs(filter);
             let totalValue = 0;
             logs.forEach((log) => {
                 const event = l2BridgeContract.interface.parseLog(log);

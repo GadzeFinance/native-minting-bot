@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.baseSlowSync = void 0;
 const ethers_1 = require("ethers");
-const helpers_1 = require("../helpers");
+const helpers_1 = require("../../helpers");
 const config_1 = require("../config");
 // Configuring base contracts
 const ADDRESS_MANAGER = '0x8EfB6B5c4767B09Dc9AA6Af4eAA89F749522BaE2';
@@ -14,7 +14,7 @@ const BASE_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007';
 const BASE_CHAIN_ID = 8453;
 async function baseSlowSync(chain) {
     // TODO: Decide on how to prune state
-    const startBlockInitial = 2612000;
+    const startBlockInitial = 14154296;
     const baseMessengerConfig = {
         l2ChainId: BASE_CHAIN_ID,
         l2Signer: new ethers_1.Wallet(config_1.PRIVATE_KEY, chain.provider),
@@ -25,7 +25,8 @@ async function baseSlowSync(chain) {
         l2OutputOracle: L2_OUTPUT_ORACLE
     };
     const baseMessenger = (0, helpers_1.CreateCrossChainMessenger)(baseMessengerConfig);
-    const withdrawalTxs = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, BASE_L2_MESSENGER_ADDRESS, chain.provider);
-    await (0, helpers_1.proveOrRelayMessage)(withdrawalTxs, baseMessenger);
+    const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, BASE_L2_MESSENGER_ADDRESS, chain);
+    await (0, helpers_1.proveOrRelayMessage)(hashes, baseMessenger);
+    return totalValue;
 }
 exports.baseSlowSync = baseSlowSync;

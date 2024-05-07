@@ -3,13 +3,15 @@ import { blastSlowSync } from './slowsync/blast';
 import { modeSlowSync } from './slowsync/mode';
 import { baseSlowSync } from './slowsync/base';
 
-export async function performSlowSync(chain: ChainInfo): Promise<void> {
+
+
+export async function performSlowSync(chain: ChainInfo): Promise<number> {
     if (chain.name === 'blast') {
-        await blastSlowSync(chain);
+        return await blastSlowSync(chain);
     } else if (chain.name === 'mode') {
-        await modeSlowSync(chain);
+        return await modeSlowSync(chain);
     } else if (chain.name === 'base') {
-        await baseSlowSync(chain);
+        return await baseSlowSync(chain);
     } else {
         throw new Error('Chain not supported');
     }

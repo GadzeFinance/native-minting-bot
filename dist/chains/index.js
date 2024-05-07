@@ -6,13 +6,13 @@ const mode_1 = require("./slowsync/mode");
 const base_1 = require("./slowsync/base");
 async function performSlowSync(chain) {
     if (chain.name === 'blast') {
-        await (0, blast_1.blastSlowSync)(chain);
+        return await (0, blast_1.blastSlowSync)(chain);
     }
     else if (chain.name === 'mode') {
-        await (0, mode_1.modeSlowSync)(chain);
+        return await (0, mode_1.modeSlowSync)(chain);
     }
     else if (chain.name === 'base') {
-        await (0, base_1.baseSlowSync)(chain);
+        return await (0, base_1.baseSlowSync)(chain);
     }
     else {
         throw new Error('Chain not supported');

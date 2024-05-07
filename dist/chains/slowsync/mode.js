@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.modeSlowSync = void 0;
 const ethers_1 = require("ethers");
-const helpers_1 = require("../helpers");
+const helpers_1 = require("../../helpers");
 const config_1 = require("../config");
 // Mode Contracts
 const ADDRESS_MANAGER = '';
@@ -25,7 +25,8 @@ async function modeSlowSync(chain) {
         l2OutputOracle: L2_OUTPUT_ORACLE
     };
     const modeMessenger = (0, helpers_1.CreateCrossChainMessenger)(modeMessengerConfig);
-    const withdrawalTxs = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, MODE_L2_MESSENGER_ADDRESS, chain.provider);
-    await (0, helpers_1.proveOrRelayMessage)(withdrawalTxs, modeMessenger);
+    const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, MODE_L2_MESSENGER_ADDRESS, chain);
+    await (0, helpers_1.proveOrRelayMessage)(hashes, modeMessenger);
+    return totalValue;
 }
 exports.modeSlowSync = modeSlowSync;

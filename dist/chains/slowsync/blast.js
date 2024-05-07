@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blastSlowSync = void 0;
-const helpers_1 = require("../helpers");
+const helpers_1 = require("../../helpers");
 // Configuring Blast Contracts
 const ADDRESS_MANAGER = '0xE064B565Cf2A312a3e66Fe4118890583727380C0';
 const L1_CROSS_DOMAIN_MESSENGER = '0x5D4472f31Bd9385709ec61305AFc749F0fA8e9d0';
@@ -23,7 +23,8 @@ async function blastSlowSync(chain) {
         l2OutputOracle: L2_OUTPUT_ORACLE
     };
     const blastMessenger = (0, helpers_1.CreateCrossChainMessenger)(blastMessengerConfig);
-    const withdrawalTxs = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, BLAST_L2_MESSENGER_ADDRESS, chain.provider);
-    await (0, helpers_1.proveOrRelayMessage)(withdrawalTxs, blastMessenger);
+    const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, BLAST_L2_MESSENGER_ADDRESS, chain);
+    await (0, helpers_1.proveOrRelayMessage)(hashes, blastMessenger);
+    return totalValue;
 }
 exports.blastSlowSync = blastSlowSync;

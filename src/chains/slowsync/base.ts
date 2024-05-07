@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../helpers';
+import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo, PRIVATE_KEY } from '../config';
 
 // Configuring base contracts
@@ -11,9 +11,9 @@ const L2_OUTPUT_ORACLE = '0x56315b90c40730925ec5485cf004d835058518A0';
 const BASE_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007'; 
 const BASE_CHAIN_ID = 8453; 
 
-export async function baseSlowSync(chain: ChainInfo): Promise<void> {
+export async function baseSlowSync(chain: ChainInfo): Promise<number> {
     // TODO: Decide on how to prune state
-    const startBlockInitial = 2612000;
+    const startBlockInitial = 14154296;
 
     const baseMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: BASE_CHAIN_ID,
@@ -27,7 +27,9 @@ export async function baseSlowSync(chain: ChainInfo): Promise<void> {
 
     const baseMessenger = CreateCrossChainMessenger(baseMessengerConfig);
 
-    const withdrawalTxs = await fetchOPBridgeTxs(startBlockInitial, BASE_L2_MESSENGER_ADDRESS, chain.provider);
+    const { hashes, totalValue } = await fetchOPBridgeTxs(startBlockInitial, BASE_L2_MESSENGER_ADDRESS, chain);
 
-    await proveOrRelayMessage(withdrawalTxs, baseMessenger);
+    await proveOrRelayMessage(hashes, baseMessenger);
+
+    return totalValue;
 }

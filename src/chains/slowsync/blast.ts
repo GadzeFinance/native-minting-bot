@@ -1,4 +1,4 @@
-import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../helpers';
+import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo } from '../config';
 
 // Configuring Blast Contracts
@@ -10,7 +10,7 @@ const L2_OUTPUT_ORACLE = '0x826D1B0D4111Ad9146Eb8941D7Ca2B6a44215c76';
 const BLAST_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007';
 const BLAST_CHAIN_ID = 81457;
 
-export async function blastSlowSync(chain: ChainInfo): Promise<void> {
+export async function blastSlowSync(chain: ChainInfo): Promise<number> {
     // TODO: decide on how to prune state
     const startBlockInitial = 2612000;
 
@@ -26,7 +26,9 @@ export async function blastSlowSync(chain: ChainInfo): Promise<void> {
 
     const blastMessenger = CreateCrossChainMessenger(blastMessengerConfig);
 
-    const withdrawalTxs = await fetchOPBridgeTxs(startBlockInitial, BLAST_L2_MESSENGER_ADDRESS, chain.provider);
+    const { hashes, totalValue }= await fetchOPBridgeTxs(startBlockInitial, BLAST_L2_MESSENGER_ADDRESS, chain);
 
-    await proveOrRelayMessage(withdrawalTxs, blastMessenger);
+    await proveOrRelayMessage(hashes, blastMessenger);
+
+    return totalValue;
 }

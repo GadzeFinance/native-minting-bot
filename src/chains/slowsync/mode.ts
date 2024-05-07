@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../helpers';
+import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo, PRIVATE_KEY } from '../config';
 
 // Mode Contracts
@@ -13,7 +13,7 @@ const MODE_L2_MESSENGER_ADDRESS = '0xC0d3c0d3c0D3c0D3C0d3C0D3C0D3c0d3c0d30007';
 const MODE_CHAIN_ID = 34443;
 
 
-export async function modeSlowSync(chain: ChainInfo): Promise<void> {
+export async function modeSlowSync(chain: ChainInfo): Promise<number> {
     // todo: decide on how to prune state
     const startBlockInitial = 6929000;
 
@@ -29,7 +29,9 @@ export async function modeSlowSync(chain: ChainInfo): Promise<void> {
 
     const modeMessenger = CreateCrossChainMessenger(modeMessengerConfig);
 
-    const withdrawalTxs = await fetchOPBridgeTxs(startBlockInitial, MODE_L2_MESSENGER_ADDRESS, chain.provider);
+    const { hashes, totalValue } = await fetchOPBridgeTxs(startBlockInitial, MODE_L2_MESSENGER_ADDRESS, chain);
 
-    await proveOrRelayMessage(withdrawalTxs, modeMessenger);
+    await proveOrRelayMessage(hashes, modeMessenger);
+
+    return totalValue;
 }

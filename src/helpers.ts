@@ -1,7 +1,8 @@
-import { providers, Contract, constants, Wallet, utils } from 'ethers';
-import L2CrossDomainMessengerABI from '../abis/L2CrossDomainMessenger.json';
+import { Contract, constants, Wallet, utils } from 'ethers';
+import L2CrossDomainMessengerABI from './abis/L2CrossDomainMessenger.json';
 import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
-import { mainnetWallet } from './config';
+import { ChainInfo, DISCORD_WEBHOOK_URL, mainnetWallet } from './chains/config';
+import axios from 'axios';
 
 export interface CrossChainMessengerConfig {
   l2ChainId: number;
@@ -37,17 +38,23 @@ export function CreateCrossChainMessenger(chainConfig: CrossChainMessengerConfig
     });
 }
 
+interface TransactionResults {
+  hashes: string[];
+  totalValue: number;
+}
+
 // The OP stack sdk methods for proving and relaying withdraws take the transaction hashes that initiated the withdraw as input. This function fetches
 // all such hashes for a given L2 from a given `initialStartBlock`.
-export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAddress: string, l2Provider: providers.JsonRpcProvider ): Promise<string[]> {
+export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAddress: string, chain: ChainInfo ): Promise<TransactionResults> {
     // todo: potentially make this configurable?
     const blockInterval = 50000;
-    const l2BridgeContract = new Contract(l2MessengerAddress, L2CrossDomainMessengerABI, l2Provider);
+    const l2BridgeContract = new Contract(l2MessengerAddress, L2CrossDomainMessengerABI, chain.provider);
 
     let hashes: string[] = [];
+    let totalValue = 0;
 
     try {
-        const latestBlockNumber = await l2Provider.getBlockNumber();
+        const latestBlockNumber = await chain.provider.getBlockNumber();
         for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
           let endBlock = startBlock + blockInterval - 1;
           if (endBlock > latestBlockNumber) {
@@ -59,21 +66,22 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
             topics: [
               // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
               l2BridgeContract.filters.SentMessageExtension1().topics![0],
-              "0x00000000000000000000000052c4221cb805479954cde5accff8c4dcaf96623b"
+              utils.hexZeroPad(chain.syncPoolAddress, 32),
             ],
             fromBlock: startBlock,
             toBlock: endBlock
           };
     
-          const logs = await l2Provider.getLogs(filter);
-          let totalValue = 0;
+          const logs = await chain.provider.getLogs(filter);
             logs.forEach((log) => {
               const event = l2BridgeContract.interface.parseLog(log);
               console.log(`Transaction Hash: ${log.transactionHash}`);
               console.log(`Value: ${event.args.value.toString()}`);
               totalValue += parseInt(utils.formatEther(event.args.value.toString()));
           });
+
           console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+
           logs.forEach((log) => {
             hashes.push(log.transactionHash);
           });
@@ -82,7 +90,10 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
       console.error(error);
     }
 
-    return hashes;
+    return {
+      hashes,
+      totalValue
+    };
 }
 
 // for a given L2 transaction hash, this function:
@@ -106,4 +117,17 @@ export async function proveOrRelayMessage(txHashes: string[], crossChainMessenge
       console.error(error);
     }
   return Promise.resolve();
+}
+
+// sends a message to a discord webhook
+export async function sendDiscordMessage(message: string): Promise<void> {
+  console.log(`Sending message to discord: ${message}`);
+    try {
+        await axios.post(DISCORD_WEBHOOK_URL, {
+          username: 'Bridge Bot',
+          content: message
+        });
+    } catch (error) {
+        console.error(`Failed to send message to discord: ${error}`);
+    }
 }

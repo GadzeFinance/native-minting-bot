@@ -8,14 +8,24 @@ const L2SyncPool_json_1 = __importDefault(require("./abis/L2SyncPool.json"));
 const ethers_1 = require("ethers");
 const config_1 = require("./chains/config");
 const chains_1 = require("./chains");
+const helpers_1 = require("./helpers");
 async function handler() {
     try {
         console.log('Lambda function has started execution.');
+        let totalEthPerChain = {};
         for (const chain of config_1.chains) {
             console.log(`Processing transactions for chain: ${chain.name}.`);
             await performFastSync(chain);
-            await (0, chains_1.performSlowSync)(chain);
+            const ethAmount = await (0, chains_1.performSlowSync)(chain);
+            totalEthPerChain[chain.name] = ethAmount; // Store ETH amount for each chain
         }
+        // Create a formatted message for Discord
+        let discordMessage = '**ETH in Withdraw Process per Chain** \n ------------------------------------ ```';
+        Object.entries(totalEthPerChain).forEach(([chainName, ethAmount]) => {
+            discordMessage += `${chainName}: ${ethAmount} ETH\n`;
+        });
+        discordMessage += '```';
+        await (0, helpers_1.sendDiscordMessage)(discordMessage);
         console.log('All transactions completed successfully.');
     }
     catch (error) {
@@ -41,8 +51,6 @@ async function performFastSync(chain) {
             nativeFee: nativeFeeRaw,
             lzTokenFee: tokenFeeRaw
         };
-        console.log(`Native Fee Raw: ${nativeFeeRaw}`); // Log the raw input
-        console.log(`Native Fee in Wei: ${fee.nativeFee.toString()}`); // Log the converted wei value
         try {
             const txResponse = await syncPoolWithSigner.sync(chain.ethAddress, extraOptions, fee, {
                 value: fee.nativeFee
@@ -56,6 +64,20 @@ async function performFastSync(chain) {
     }
     else {
         console.log(`Skipping fast sync for chain: ${chain.name}. Only has ${ethers_1.utils.formatEther(syncPoolBalance)} ETH in the liquidity pool`);
+    }
+}
+// begs for eth for all active chains if EOA is running low on funds
+async function eBegger(chains) {
+    const mainnetBalance = await config_1.mainnetProvider.getBalance(config_1.mainnetWallet.address);
+    if (mainnetBalance.lt(ethers_1.utils.parseEther("1"))) {
+        (0, helpers_1.sendDiscordMessage)(`**Alert:** The bot wallet \`${config_1.mainnetWallet.address}\` on mainnet is running low on ETH.`);
+    }
+    // L2
+    for (const chain of chains) {
+        const balance = await chain.provider.getBalance(chain.wallet.address);
+        if (balance.lt(ethers_1.utils.parseEther("1"))) {
+            (0, helpers_1.sendDiscordMessage)(`**Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH.`);
+        }
     }
 }
 handler();
