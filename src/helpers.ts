@@ -1,7 +1,7 @@
-import { Contract, constants, Wallet, utils } from 'ethers';
+import { Contract, constants, Wallet, utils, providers } from 'ethers';
 import L2CrossDomainMessengerABI from './abis/L2CrossDomainMessenger.json';
 import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
-import { ChainInfo, DISCORD_WEBHOOK_URL, mainnetWallet } from './chains/config';
+import { ChainInfo, DISCORD_WEBHOOK_URL, MAINNET_WALLET } from './chains/config';
 import axios from 'axios';
 
 export interface CrossChainMessengerConfig {
@@ -19,7 +19,7 @@ export function CreateCrossChainMessenger(chainConfig: CrossChainMessengerConfig
     return new CrossChainMessenger({
         l1ChainId: 1,
         l2ChainId: chainConfig.l2ChainId,
-        l1SignerOrProvider: mainnetWallet,
+        l1SignerOrProvider: MAINNET_WALLET,
         l2SignerOrProvider: chainConfig.l2Signer,
         contracts: {
           l1: {
@@ -52,42 +52,37 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
 
     let hashes: string[] = [];
     let totalValue = 0;
+    const latestBlockNumber = await chain.provider.getBlockNumber();
+    for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
+      let endBlock = startBlock + blockInterval - 1;
+      if (endBlock > latestBlockNumber) {
+        endBlock = latestBlockNumber;
+      }
 
-    try {
-        const latestBlockNumber = await chain.provider.getBlockNumber();
-        for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
-          let endBlock = startBlock + blockInterval - 1;
-          if (endBlock > latestBlockNumber) {
-            endBlock = latestBlockNumber;
-          }
-    
-          const filter = {
-            address: l2MessengerAddress,
-            topics: [
-              // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
-              l2BridgeContract.filters.SentMessageExtension1().topics![0],
-              utils.hexZeroPad(chain.syncPoolAddress, 32),
-            ],
-            fromBlock: startBlock,
-            toBlock: endBlock
-          };
-    
-          const logs = await chain.provider.getLogs(filter);
-            logs.forEach((log) => {
-              const event = l2BridgeContract.interface.parseLog(log);
-              console.log(`Transaction Hash: ${log.transactionHash}`);
-              console.log(`Value: ${event.args.value.toString()}`);
-              totalValue += parseInt(utils.formatEther(event.args.value.toString()));
-          });
+      const filter = {
+        address: l2MessengerAddress,
+        topics: [
+          // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
+          l2BridgeContract.filters.SentMessageExtension1().topics![0],
+          utils.hexZeroPad(chain.syncPoolAddress, 32),
+        ],
+        fromBlock: startBlock,
+        toBlock: endBlock
+      };
 
-          console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+      const logs = await chain.provider.getLogs(filter);
+        logs.forEach(async (log) => {
+          const event = l2BridgeContract.interface.parseLog(log);
+          console.log(`Transaction Hash: ${log.transactionHash}`);
+          console.log(`Value: ${event.args.value.toString()}`);
+          totalValue += parseInt(utils.formatEther(event.args.value.toString()));
+      });
 
-          logs.forEach((log) => {
-            hashes.push(log.transactionHash);
-          });
-        }
-      } catch (error) {
-      console.error(error);
+      console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+
+      logs.forEach((log) => {
+        hashes.push(log.transactionHash);
+      });
     }
 
     return {
@@ -100,34 +95,42 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
 // 1. gets the status of the transaction
 // 2. `proves` or `relays` the transaction if in ready state
 export async function proveOrRelayMessage(txHashes: string[], crossChainMessenger: CrossChainMessenger): Promise<void> {
-    try {
-      for (const txHash of txHashes) {
-        const curTxStatus = await crossChainMessenger.getMessageStatus(txHash);
-        console.log(`Message ${txHash} status: ${MessageStatus[curTxStatus]}`);
-  
-        if (curTxStatus === MessageStatus.READY_TO_PROVE) {
-          console.log(`Proving tx ${txHash}`);
-          await crossChainMessenger.proveMessage(txHash);
-        } else if (curTxStatus === MessageStatus.READY_FOR_RELAY) {
-          console.log(`Relaying tx ${txHash}`);
-          await crossChainMessenger.finalizeMessage(txHash);
-        }
-      }
-    } catch (error) {
-      console.error(error);
+  for (const txHash of txHashes) {
+    const curTxStatus = await crossChainMessenger.getMessageStatus(txHash);
+    console.log(`Message ${txHash} status: ${MessageStatus[curTxStatus]}`);
+
+    if (curTxStatus === MessageStatus.READY_TO_PROVE) {
+      console.log(`Proving tx ${txHash}`);
+      await crossChainMessenger.proveMessage(txHash);
+    } else if (curTxStatus === MessageStatus.READY_FOR_RELAY) {
+      console.log(`Relaying tx ${txHash}`);
+      await crossChainMessenger.finalizeMessage(txHash);
     }
+  }
   return Promise.resolve();
 }
 
 // sends a message to a discord webhook
 export async function sendDiscordMessage(message: string): Promise<void> {
-  console.log(`Sending message to discord: ${message}`);
-    try {
-        await axios.post(DISCORD_WEBHOOK_URL, {
-          username: 'Bridge Bot',
-          content: message
-        });
-    } catch (error) {
-        console.error(`Failed to send message to discord: ${error}`);
-    }
+  try {
+      await axios.post(DISCORD_WEBHOOK_URL, {
+        username: 'Bridge Bot',
+        content: message
+      });
+  } catch (error) {
+      console.error(`Failed to send message to discord: ${error}`);
+  }
+}
+
+// calculate start block for fetching bridge transactions
+// blockTimeSeconds - how often blocks are produced in seconds (all OP stack chains have 2s block time)
+// daysToIndex - The amount of days to index back for withdraw events
+export async function calculateStartBlock(provider: providers.JsonRpcProvider, blockTimeSeconds: number, daysToIndex: number): Promise<number> {
+  // calculate the amount of block
+  const secondsToIndex = daysToIndex * 24 * 60 * 60;
+  const blocksToIndex = Math.floor(secondsToIndex / blockTimeSeconds)
+
+  const currentBlock = await provider.getBlockNumber();
+
+  return Math.max(currentBlock - blocksToIndex, 0);
 }

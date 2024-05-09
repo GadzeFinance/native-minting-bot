@@ -1,92 +1,96 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
 import { ethers, utils } from "ethers";
-import { ChainInfo, chains, mainnetProvider, mainnetWallet } from "./chains/config";
+import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
 import { performSlowSync } from "./chains";
 import { sendDiscordMessage } from "./helpers";
+import { resolve } from "path";
 
 export async function handler(): Promise<void> {
-  try {
-    console.log('Lambda function has started execution.');
+  console.log('Lambda function has started execution.');
 
-    let totalEthPerChain: Record<string, number> = {};
+  await eBegger(CHAINS);
 
-    for (const chain of chains) {
-      console.log(`Processing transactions for chain: ${chain.name}.`);
-      
-      await performFastSync(chain);
+  let totalEthPerChain: Record<string, number> = {};
+  for (const chain of CHAINS) {
+    console.log(`Processing transactions for chain: ${chain.name}`);
 
-      const ethAmount = await performSlowSync(chain);
-      totalEthPerChain[chain.name] = ethAmount;  // Store ETH amount for each chain
-    }
-
-    // Create a formatted message for Discord
-    let discordMessage = '**ETH in Withdraw Process per Chain** \n--------------------------------------- ```';
-    Object.entries(totalEthPerChain).forEach(([chainName, ethAmount]) => {
-      discordMessage += `${chainName}: ${ethAmount} ETH\n`;
-    });
-    discordMessage += '```';
-
-    await sendDiscordMessage(discordMessage);
-
-    console.log('All transactions completed successfully.');
-  } catch (error) {
-    console.error('An error occurred:', error);
-    throw error;
+    // perform fast sync and slow sync for each chain and return any errors to discord
+    // try {
+    //   await performFastSync(chain);
+    //   totalEthPerChain[chain.name] = await performSlowSync(chain);
+    // } catch (error) {
+    //   console.log(`Error occurred while syncing ${chain.name}: ${error}.`)
+    //   const truncatedError = (error as Error).toString().substring(0, 200); 
+    //   await sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${truncatedError}\`\`\``);
+    // }
   }
+
+  // await findChallengePeriodEth();
+
+  // Create a formatted message for Discord
+  let discordMessage = '**ETH in Withdraw Process per Chain** \n--------------------------------------- ```';
+  Object.entries(totalEthPerChain).forEach(([chainName, ethAmount]) => {
+    discordMessage += `${chainName}: ${ethAmount} ETH\n`;
+  });
+  discordMessage += '```';
+  if (Object.keys(totalEthPerChain).length != 0) {
+    await sendDiscordMessage(discordMessage);
+  }
+
+  console.log('All chains processed.');
 }
 
 // if the given L2 `syncPool` contract has over 1000 ETH, execute the `fast-sync` 
 async function performFastSync(chain: ChainInfo): Promise<void> {
-
   const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
 
-  if (syncPoolBalance.gt(ethers.utils.parseEther("1000"))) {
+  console.log(`Sync pool balance for chain: ${chain.name} is ${utils.formatEther(syncPoolBalance)} ETH.`);
+
+  if (syncPoolBalance.gt(utils.parseEther("400"))) {
     console.log(`Executing fast sync for chain: ${chain.name}.`);
 
     const syncPool = new ethers.Contract(chain.syncPoolAddress, L2SyncPool, chain.provider);
     const syncPoolWithSigner = syncPool.connect(chain.wallet);
 
-    // params for the quote call 
-    const tokenIn = chain.ethAddress;
+    const tokenIn = ETH_ADDRESS;
     const extraOptions = utils.arrayify("0x");
-    const payInLzToken = false;
+    const quoteResponse = await syncPool.quoteSync(tokenIn, extraOptions, false);
+    const [nativeFee, lzTokenFee] = quoteResponse
 
-    const quoteResponse = await syncPool.quoteSync(tokenIn, extraOptions, payInLzToken);
-
-    const [nativeFeeRaw, tokenFeeRaw] = quoteResponse;
+    const fee = { nativeFee, lzTokenFee };
     
-    const fee = {
-      nativeFee: nativeFeeRaw,
-      lzTokenFee: tokenFeeRaw
-    }
-    try {
-      const txResponse = await syncPoolWithSigner.sync(chain.ethAddress, extraOptions, fee, {
-        value: fee.nativeFee
-      });
-      const receipt = await txResponse.wait();
-      console.log(`Transaction successful with hash: ${receipt.transactionHash}`);
-    } catch (error) {
-      console.error(`Failed to execute sync: ${error}`);
-    }
+    const txResponse = await syncPoolWithSigner.sync(tokenIn, extraOptions, fee, {
+      value: fee.nativeFee.toString(),
+    });
+
+    const receipt = await txResponse.wait();
+    console.log(`Transaction successful with hash: ${receipt.transactionHash}`);
   } else {
-    console.log(`Skipping fast sync for chain: ${chain.name}. Only has ${utils.formatEther(syncPoolBalance)} ETH in the liquidity pool`);
+    console.log(`Skipping fast sync for chain: ${chain.name}. Only has ${utils.formatEther(syncPoolBalance)} ETH in the sync pool.`);
   }
 }
 
-// begs for eth for all active chains if EOA is running low on funds
+// begs for eth for any active chains where EOA is running low on funds
 async function eBegger(chains: ChainInfo[]): Promise<void> {
-  const mainnetBalance = await mainnetProvider.getBalance(mainnetWallet.address);
-  if (mainnetBalance.lt(utils.parseEther("1"))) {
-    sendDiscordMessage(`**Alert:** The bot wallet \`${mainnetWallet.address}\` on mainnet is running low on ETH.`);
+  const mainnetBalance = await MAINNET_PROVIDER.getBalance(MAINNET_WALLET.address);
+  if (mainnetBalance.lt(utils.parseEther("0.02"))) {
+    sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${MAINNET_WALLET.address}\` on mainnet is running low on ETH ❗️❗️`);
   }
   
   // L2
   for (const chain of chains) {
     const balance = await chain.provider.getBalance(chain.wallet.address);
-    if (balance.lt(utils.parseEther("1"))) {
-      sendDiscordMessage(`**Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH.`);
+    if (balance.lt(utils.parseEther("0.02"))) {
+      sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH ❗️❗️`);
     }
   }
+}
+
+// generates a report of the ETH in the challenge period for each china and the expected claim date
+// 1. filters through the EOA transactions to find the proof submissions
+// 2. based of the length of the challenge period for the chain, calculates the expected claim date
+async function generateReport(): Promise<void> {
+  
 }
 
 handler();

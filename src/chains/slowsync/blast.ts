@@ -1,4 +1,4 @@
-import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
+import { calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo } from '../config';
 
 // Configuring Blast Contracts
@@ -11,8 +11,8 @@ const BLAST_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007';
 const BLAST_CHAIN_ID = 81457;
 
 export async function blastSlowSync(chain: ChainInfo): Promise<number> {
-    // TODO: decide on how to prune state
-    const startBlockInitial = 2612000;
+    // TODO: Reduce to 17 days once we have cleared out the backlog
+    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21)
 
     const blastMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: BLAST_CHAIN_ID,
@@ -26,7 +26,7 @@ export async function blastSlowSync(chain: ChainInfo): Promise<number> {
 
     const blastMessenger = CreateCrossChainMessenger(blastMessengerConfig);
 
-    const { hashes, totalValue }= await fetchOPBridgeTxs(startBlockInitial, BLAST_L2_MESSENGER_ADDRESS, chain);
+    const { hashes, totalValue }= await fetchOPBridgeTxs(initialStartBlock, BLAST_L2_MESSENGER_ADDRESS, chain);
 
     await proveOrRelayMessage(hashes, blastMessenger);
 

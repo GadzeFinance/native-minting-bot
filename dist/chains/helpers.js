@@ -13,7 +13,7 @@ function CreateCrossChainMessenger(chainConfig) {
     return new sdk_1.CrossChainMessenger({
         l1ChainId: 1,
         l2ChainId: chainConfig.l2ChainId,
-        l1SignerOrProvider: config_1.mainnetWallet,
+        l1SignerOrProvider: config_1.MAINNET_WALLET,
         l2SignerOrProvider: chainConfig.l2Signer,
         contracts: {
             l1: {

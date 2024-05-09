@@ -1,5 +1,5 @@
 import { Wallet } from 'ethers';
-import { CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
+import { calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo, PRIVATE_KEY } from '../config';
 
 // Mode Contracts
@@ -12,10 +12,9 @@ const MODE_L2_MESSENGER_ADDRESS = '0xC0d3c0d3c0D3c0D3C0d3C0D3C0D3c0d3c0d30007';
 
 const MODE_CHAIN_ID = 34443;
 
-
 export async function modeSlowSync(chain: ChainInfo): Promise<number> {
-    // todo: decide on how to prune state
-    const startBlockInitial = 6929000;
+    // TODO: Reduce to 10 days once we have cleared out the backlog
+    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21)
 
     const modeMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: MODE_CHAIN_ID,
@@ -29,7 +28,7 @@ export async function modeSlowSync(chain: ChainInfo): Promise<number> {
 
     const modeMessenger = CreateCrossChainMessenger(modeMessengerConfig);
 
-    const { hashes, totalValue } = await fetchOPBridgeTxs(startBlockInitial, MODE_L2_MESSENGER_ADDRESS, chain);
+    const { hashes, totalValue } = await fetchOPBridgeTxs(initialStartBlock, MODE_L2_MESSENGER_ADDRESS, chain);
 
     await proveOrRelayMessage(hashes, modeMessenger);
 

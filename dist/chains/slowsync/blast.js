@@ -11,8 +11,8 @@ const L2_OUTPUT_ORACLE = '0x826D1B0D4111Ad9146Eb8941D7Ca2B6a44215c76';
 const BLAST_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007';
 const BLAST_CHAIN_ID = 81457;
 async function blastSlowSync(chain) {
-    // TODO: decide on how to prune state
-    const startBlockInitial = 2612000;
+    // TODO: Reduce to 17 days once we have cleared out the backlog
+    const initialStartBlock = await (0, helpers_1.calculateStartBlock)(chain.provider, 2, 21);
     const blastMessengerConfig = {
         l2ChainId: BLAST_CHAIN_ID,
         l2Signer: chain.wallet,
@@ -23,7 +23,7 @@ async function blastSlowSync(chain) {
         l2OutputOracle: L2_OUTPUT_ORACLE
     };
     const blastMessenger = (0, helpers_1.CreateCrossChainMessenger)(blastMessengerConfig);
-    const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(startBlockInitial, BLAST_L2_MESSENGER_ADDRESS, chain);
+    const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, BLAST_L2_MESSENGER_ADDRESS, chain);
     await (0, helpers_1.proveOrRelayMessage)(hashes, blastMessenger);
     return totalValue;
 }
