@@ -3,12 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateStartBlock = exports.sendDiscordMessage = exports.proveOrRelayMessage = exports.fetchOPBridgeTxs = exports.CreateCrossChainMessenger = void 0;
+exports.calculateStartBlock = exports.proveOrRelayMessage = exports.fetchOPBridgeTxs = exports.CreateCrossChainMessenger = void 0;
 const ethers_1 = require("ethers");
 const L2CrossDomainMessenger_json_1 = __importDefault(require("./abis/L2CrossDomainMessenger.json"));
 const sdk_1 = require("@eth-optimism/sdk");
 const config_1 = require("./chains/config");
-const axios_1 = __importDefault(require("axios"));
 // Generating a CrossChainMessenger instance for a specific L2 chain
 function CreateCrossChainMessenger(chainConfig) {
     return new sdk_1.CrossChainMessenger({
@@ -94,18 +93,16 @@ async function proveOrRelayMessage(txHashes, crossChainMessenger) {
 }
 exports.proveOrRelayMessage = proveOrRelayMessage;
 // sends a message to a discord webhook
-async function sendDiscordMessage(message) {
-    try {
-        await axios_1.default.post(config_1.DISCORD_WEBHOOK_URL, {
-            username: 'Bridge Bot',
-            content: message
-        });
-    }
-    catch (error) {
-        console.error(`Failed to send message to discord: ${error}`);
-    }
-}
-exports.sendDiscordMessage = sendDiscordMessage;
+// export async function sendDiscordMessage(message: string): Promise<void> {
+//   try {
+//       await axios.post(DISCORD_WEBHOOK_URL, {
+//         username: 'Bridge Bot',
+//         content: message
+//       });
+//   } catch (error) {
+//       console.error(`Failed to send message to discord: ${error}`);
+//   }
+// }
 // calculate start block for fetching bridge transactions
 // blockTimeSeconds - how often blocks are produced in seconds (all OP stack chains have 2s block time)
 // daysToIndex - The amount of days to index back for withdraw events

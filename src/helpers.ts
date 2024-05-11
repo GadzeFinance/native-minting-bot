@@ -111,16 +111,16 @@ export async function proveOrRelayMessage(txHashes: string[], crossChainMessenge
 }
 
 // sends a message to a discord webhook
-export async function sendDiscordMessage(message: string): Promise<void> {
-  try {
-      await axios.post(DISCORD_WEBHOOK_URL, {
-        username: 'Bridge Bot',
-        content: message
-      });
-  } catch (error) {
-      console.error(`Failed to send message to discord: ${error}`);
-  }
-}
+// export async function sendDiscordMessage(message: string): Promise<void> {
+//   try {
+//       await axios.post(DISCORD_WEBHOOK_URL, {
+//         username: 'Bridge Bot',
+//         content: message
+//       });
+//   } catch (error) {
+//       console.error(`Failed to send message to discord: ${error}`);
+//   }
+// }
 
 // calculate start block for fetching bridge transactions
 // blockTimeSeconds - how often blocks are produced in seconds (all OP stack chains have 2s block time)

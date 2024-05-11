@@ -4,8 +4,12 @@ exports.performSlowSync = void 0;
 const blast_1 = require("./slowsync/blast");
 const mode_1 = require("./slowsync/mode");
 const base_1 = require("./slowsync/base");
+const linea_1 = require("./slowsync/linea");
 async function performSlowSync(chain) {
-    if (chain.name === 'blast') {
+    if (chain.name === 'linea') {
+        return await (0, linea_1.lineaSlowSync)(chain);
+    }
+    else if (chain.name === 'blast') {
         return await (0, blast_1.blastSlowSync)(chain);
     }
     else if (chain.name === 'mode') {
