@@ -19,7 +19,6 @@ interface LineaTransaction {
     withdrawHash: string;
 }
 
-
 export async function lineaSlowSync(): Promise<number> {
     // todo: filter to get all of the linea transaction hashes and the withdrawHash that is emitted from said contract
     let lineaTransactions: LineaTransaction[] = [];

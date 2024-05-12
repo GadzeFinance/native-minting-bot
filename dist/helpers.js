@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateStartBlock = exports.proveOrRelayMessage = exports.fetchOPBridgeTxs = exports.CreateCrossChainMessenger = void 0;
+exports.calculateStartBlock = exports.sendDiscordMessage = exports.proveOrRelayMessage = exports.fetchOPBridgeTxs = exports.CreateCrossChainMessenger = void 0;
 const ethers_1 = require("ethers");
 const L2CrossDomainMessenger_json_1 = __importDefault(require("./abis/L2CrossDomainMessenger.json"));
 const sdk_1 = require("@eth-optimism/sdk");
@@ -62,11 +62,12 @@ async function fetchOPBridgeTxs(initialStartBlock, l2MessengerAddress, chain) {
             console.log(`Value: ${event.args.value.toString()}`);
             totalValue += parseInt(ethers_1.utils.formatEther(event.args.value.toString()));
         });
-        console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+        // console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
         logs.forEach((log) => {
             hashes.push(log.transactionHash);
         });
     }
+    console.log(`Total value: ${totalValue} ETH`);
     return {
         hashes,
         totalValue
@@ -93,16 +94,17 @@ async function proveOrRelayMessage(txHashes, crossChainMessenger) {
 }
 exports.proveOrRelayMessage = proveOrRelayMessage;
 // sends a message to a discord webhook
-// export async function sendDiscordMessage(message: string): Promise<void> {
-//   try {
-//       await axios.post(DISCORD_WEBHOOK_URL, {
-//         username: 'Bridge Bot',
-//         content: message
-//       });
-//   } catch (error) {
-//       console.error(`Failed to send message to discord: ${error}`);
-//   }
-// }
+async function sendDiscordMessage(message) {
+    // try {
+    //     await axios.post(DISCORD_WEBHOOK_URL, {
+    //       username: 'Bridge Bot',
+    //       content: message
+    //     });
+    // } catch (error) {~
+    //     console.error(`Failed to send message to discord: ${error}`);
+    // }
+}
+exports.sendDiscordMessage = sendDiscordMessage;
 // calculate start block for fetching bridge transactions
 // blockTimeSeconds - how often blocks are produced in seconds (all OP stack chains have 2s block time)
 // daysToIndex - The amount of days to index back for withdraw events

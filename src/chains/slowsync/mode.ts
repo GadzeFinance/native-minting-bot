@@ -2,13 +2,14 @@ import { Wallet } from 'ethers';
 import { calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo, PRIVATE_KEY } from '../config';
 
-// Mode Contracts
-const ADDRESS_MANAGER = '';
-const L1_CROSS_DOMAIN_MESSENGER = '';
-const L1_STANDARD_BRIDGE = '';
-const OPTIMISM_PORTAL = '';
-const L2_OUTPUT_ORACLE = '';
+// configuring mode contracts
+const ADDRESS_MANAGER = '0x50eF494573f28Cad6B64C31b7a00Cdaa48306e15';
+const L1_CROSS_DOMAIN_MESSENGER = '0x95bDCA6c8EdEB69C98Bd5bd17660BaCef1298A6f';
+const L1_STANDARD_BRIDGE = '0x735aDBbE72226BD52e818E7181953f42E3b0FF21'; 
+const OPTIMISM_PORTAL = '0x8B34b14c7c7123459Cf3076b8Cb929BE097d0C07';
+const L2_OUTPUT_ORACLE = '0x4317ba146D4933D889518a3e5E11Fe7a53199b04';
 const MODE_L2_MESSENGER_ADDRESS = '0xC0d3c0d3c0D3c0D3C0d3C0D3C0D3c0d3c0d30007';
+
 
 const MODE_CHAIN_ID = 34443;
 

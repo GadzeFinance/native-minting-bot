@@ -24,7 +24,14 @@ async function blastSlowSync(chain) {
     };
     const blastMessenger = (0, helpers_1.CreateCrossChainMessenger)(blastMessengerConfig);
     const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, BLAST_L2_MESSENGER_ADDRESS, chain);
-    await (0, helpers_1.proveOrRelayMessage)(hashes, blastMessenger);
+    // Blast is a OP stack chain, but additional inputs are required for finalizing messages due to yield management
+    for (const hash of hashes) {
+        console.log("L2 transaction hash: ", hash);
+        if (hash == "0xe2e465b14944cfee0ca53f50c4e892331e09211bea46ee64c65403e12d1b7226") {
+            const receipt = await blastMessenger.l2Provider.getTransactionReceipt(hash);
+            console.log("Receipt: ", receipt.logs);
+        }
+    }
     return totalValue;
 }
 exports.blastSlowSync = blastSlowSync;
