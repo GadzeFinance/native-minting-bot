@@ -1,7 +1,7 @@
 import { Contract, constants, Wallet, utils, providers, BigNumber } from 'ethers';
 import L2CrossDomainMessengerABI from './abis/L2CrossDomainMessenger.json';
 import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
-import { ChainInfo, DISCORD_WEBHOOK_URL, MAINNET_WALLET } from './chains/config';
+import { ChainInfo, DISCORD_WEBHOOK_URL, L2_CROSS_DOMAIN_MESSENGER, MAINNET_WALLET } from './chains/config';
 import axios from 'axios';
 
 export interface CrossChainMessengerConfig {
@@ -38,20 +38,20 @@ export function CreateCrossChainMessenger(chainConfig: CrossChainMessengerConfig
     });
 }
 
-interface TransactionResults {
-  hashes: string[];
-  totalValue: number;
+interface opWithdraw {
+  hash: string;
+  messageStatus: MessageStatus;
+  value: BigNumber;
 }
 
 // The OP stack sdk methods for proving and relaying withdraws take the transaction hashes that initiated the withdraw as input. This function fetches
 // all such hashes for a given L2 from a given `initialStartBlock`.
-export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAddress: string, chain: ChainInfo ): Promise<TransactionResults> {
+export async function fetchOPBridgeTxs(initialStartBlock: number, chain: ChainInfo, crossChainMessenger: CrossChainMessenger): Promise<opWithdraw[]> {
     // todo: potentially make this configurable?
     const blockInterval = 50000;
-    const l2BridgeContract = new Contract(l2MessengerAddress, L2CrossDomainMessengerABI, chain.provider);
+    const l2BridgeContract = new Contract(L2_CROSS_DOMAIN_MESSENGER, L2CrossDomainMessengerABI, chain.provider);
 
-    let hashes: string[] = [];
-    let totalValue = 0;
+    let res: opWithdraw[] = [];
     const latestBlockNumber = await chain.provider.getBlockNumber();
     for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
       let endBlock = startBlock + blockInterval - 1;
@@ -60,7 +60,7 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
       }
 
       const filter = {
-        address: l2MessengerAddress,
+        address: L2_CROSS_DOMAIN_MESSENGER,
         topics: [
           // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
           l2BridgeContract.filters.SentMessageExtension1().topics![0],
@@ -73,43 +73,36 @@ export async function fetchOPBridgeTxs(initialStartBlock: number, l2MessengerAdd
       const logs = await chain.provider.getLogs(filter);
         logs.forEach(async (log) => {
           const event = l2BridgeContract.interface.parseLog(log);
+          const value = event.args.value;
+          const hash = log.transactionHash;
+          const messageStatus = await crossChainMessenger.getMessageStatus(hash);
           console.log(`Transaction Hash: ${log.transactionHash}`);
           console.log(`Value: ${event.args.value.toString()}`);
-          totalValue += parseInt(utils.formatEther(event.args.value.toString()));
+          console.log(`Withdraw Status: ${MessageStatus[messageStatus]}`);
+          res.push({hash, messageStatus, value});
       });
 
-      // console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
-
-      logs.forEach((log) => {
-        hashes.push(log.transactionHash);
-      });
+      console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
     }
-
-    console.log(`Total value: ${totalValue} ETH`);
-
-    return {
-      hashes,
-      totalValue
-    };
+    return res
 }
 
 // for a given L2 transaction hash, this function:
 // 1. gets the status of the transaction
 // 2. `proves` or `relays` the transaction if in ready state
-export async function proveOrRelayMessage(txHashes: string[], crossChainMessenger: CrossChainMessenger): Promise<void> {
-  for (const txHash of txHashes) {
-    const curTxStatus = await crossChainMessenger.getMessageStatus(txHash);
-    console.log(`Message ${txHash} status: ${MessageStatus[curTxStatus]}`);
-
-    if (curTxStatus === MessageStatus.READY_TO_PROVE) {
-      console.log(`Proving tx ${txHash}`);
-      await crossChainMessenger.proveMessage(txHash);
-    } else if (curTxStatus === MessageStatus.READY_FOR_RELAY) {
-      console.log(`Relaying tx ${txHash}`);
-      await crossChainMessenger.finalizeMessage(txHash);
+export async function proveOrRelayMessage(withdraws: opWithdraw[], crossChainMessenger: CrossChainMessenger): Promise<opWithdraw[]> {
+  for (const withdraw of withdraws) {
+    if (withdraw.messageStatus === MessageStatus.READY_TO_PROVE) {
+      console.log(`Proving tx ${withdraw.hash}`);
+      await crossChainMessenger.proveMessage(withdraw.hash);
+      withdraw.messageStatus = MessageStatus.READY_FOR_RELAY;
+    } else if (withdraw.messageStatus === MessageStatus.READY_FOR_RELAY) {
+      console.log(`Relaying tx ${withdraw.hash}`);
+      await crossChainMessenger.finalizeMessage(withdraw.hash);
+      withdraw.messageStatus = MessageStatus.RELAYED;
     }
   }
-  return Promise.resolve();
+  return withdraws;
 }
 
 // sends a message to a discord webhook
@@ -119,7 +112,7 @@ export async function sendDiscordMessage(message: string): Promise<void> {
   //       username: 'Bridge Bot',
   //       content: message
   //     });
-  // } catch (error) {~
+  // } catch (error) {
   //     console.error(`Failed to send message to discord: ${error}`);
   // }
 }

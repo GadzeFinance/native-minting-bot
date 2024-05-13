@@ -8,7 +8,8 @@ const L1_CROSS_DOMAIN_MESSENGER = '0x95bDCA6c8EdEB69C98Bd5bd17660BaCef1298A6f';
 const L1_STANDARD_BRIDGE = '0x735aDBbE72226BD52e818E7181953f42E3b0FF21'; 
 const OPTIMISM_PORTAL = '0x8B34b14c7c7123459Cf3076b8Cb929BE097d0C07';
 const L2_OUTPUT_ORACLE = '0x4317ba146D4933D889518a3e5E11Fe7a53199b04';
-const MODE_L2_MESSENGER_ADDRESS = '0xC0d3c0d3c0D3c0D3C0d3C0D3C0D3c0d3c0d30007';
+
+
 
 
 const MODE_CHAIN_ID = 34443;
@@ -29,9 +30,9 @@ export async function modeSlowSync(chain: ChainInfo): Promise<number> {
 
     const modeMessenger = CreateCrossChainMessenger(modeMessengerConfig);
 
-    const { hashes, totalValue } = await fetchOPBridgeTxs(initialStartBlock, MODE_L2_MESSENGER_ADDRESS, chain);
+    let withdraws = await fetchOPBridgeTxs(initialStartBlock, chain, modeMessenger);
 
-    await proveOrRelayMessage(hashes, modeMessenger);
+    withdraws =  await proveOrRelayMessage(withdraws, modeMessenger);
 
-    return totalValue;
+    return 0;
 }
