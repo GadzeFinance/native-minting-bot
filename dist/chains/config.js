@@ -1,28 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.ETHERSCAN_PROVIDER = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.PRIVATE_KEY = void 0;
+exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.ETHERSCAN_PROVIDER = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.PRIVATE_KEY = void 0;
 const ethers_1 = require("ethers");
 require('dotenv').config();
 exports.PRIVATE_KEY = process.env.PRIVATE_KEY;
 exports.CHAINS = [
-    // {
-    //   name: 'blast',
-    //   provider: new providers.JsonRpcProvider('https://blast-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52'),
-    //   wallet: new Wallet(PRIVATE_KEY, new providers.JsonRpcProvider('https://blast-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52')),
-    //   syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B", 
-    // },
+    {
+        name: 'blast',
+        provider: new ethers_1.providers.JsonRpcProvider('https://blast-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52'),
+        wallet: new ethers_1.Wallet(exports.PRIVATE_KEY, new ethers_1.providers.JsonRpcProvider('https://blast-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52')),
+        syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
+    },
     // {
     //   name: 'base',
     //   provider: new providers.JsonRpcProvider('https://base-mainnet.g.alchemy.com/v2/tb6jud_eQqvR2JK8NoUlLIoBf9P-oqd-'),
     //   wallet: new Wallet(PRIVATE_KEY, new providers.JsonRpcProvider('https://base-mainnet.g.alchemy.com/v2/tb6jud_eQqvR2JK8NoUlLIoBf9P-oqd-')),
     //   syncPoolAddress: "0xc38e046dFDAdf15f7F56853674242888301208a5",  
     // },
-    {
-        name: 'mode',
-        provider: new ethers_1.providers.JsonRpcProvider('https://mainnet.mode.network'),
-        wallet: new ethers_1.Wallet(exports.PRIVATE_KEY, new ethers_1.providers.JsonRpcProvider('https://mainnet.mode.network')),
-        syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
-    },
+    // {
+    //   name: 'mode',
+    //   provider: new providers.JsonRpcProvider('https://mainnet.mode.network'),
+    //   wallet: new Wallet(PRIVATE_KEY, new providers.JsonRpcProvider('https://mainnet.mode.network')),
+    //   syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B",
+    // },
     // {
     //   name: 'linea',
     //   provider: new providers.JsonRpcProvider('https://linea-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52'),
@@ -39,3 +39,5 @@ exports.ETHERSCAN_PROVIDER = new ethers_1.providers.EtherscanProvider('homestead
 // Discord webhook
 exports.DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1237225752512958525/7w8cw_tO1iGK4csPgVq1K8Ajjt0wSG5NT5TnnDtGW_CQ61Zi6_nEtCYvM9Rt-95cJzKp";
 exports.ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+// OP stack precompile contracts
+exports.L2_CROSS_DOMAIN_MESSENGER = "0x4200000000000000000000000000000000000007";

@@ -10,7 +10,6 @@ const L1_CROSS_DOMAIN_MESSENGER = '0x95bDCA6c8EdEB69C98Bd5bd17660BaCef1298A6f';
 const L1_STANDARD_BRIDGE = '0x735aDBbE72226BD52e818E7181953f42E3b0FF21';
 const OPTIMISM_PORTAL = '0x8B34b14c7c7123459Cf3076b8Cb929BE097d0C07';
 const L2_OUTPUT_ORACLE = '0x4317ba146D4933D889518a3e5E11Fe7a53199b04';
-const MODE_L2_MESSENGER_ADDRESS = '0x4200000000000000000000000000000000000007';
 const MODE_CHAIN_ID = 34443;
 async function modeSlowSync(chain) {
     // TODO: Reduce to 10 days once we have cleared out the backlog
@@ -25,8 +24,8 @@ async function modeSlowSync(chain) {
         l2OutputOracle: L2_OUTPUT_ORACLE
     };
     const modeMessenger = (0, helpers_1.CreateCrossChainMessenger)(modeMessengerConfig);
-    const { hashes, totalValue } = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, MODE_L2_MESSENGER_ADDRESS, chain);
-    await (0, helpers_1.proveOrRelayMessage)(hashes, modeMessenger);
-    return totalValue;
+    let withdraws = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, chain, modeMessenger);
+    withdraws = await (0, helpers_1.proveOrRelayMessage)(withdraws, modeMessenger);
+    return 0;
 }
 exports.modeSlowSync = modeSlowSync;

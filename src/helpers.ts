@@ -16,26 +16,26 @@ export interface CrossChainMessengerConfig {
 
 // Generating a CrossChainMessenger instance for a specific L2 chain
 export function CreateCrossChainMessenger(chainConfig: CrossChainMessengerConfig): CrossChainMessenger {
-    return new CrossChainMessenger({
-        l1ChainId: 1,
-        l2ChainId: chainConfig.l2ChainId,
-        l1SignerOrProvider: MAINNET_WALLET,
-        l2SignerOrProvider: chainConfig.l2Signer,
-        contracts: {
-          l1: {
-          AddressManager: chainConfig.addressManager,
-          L1CrossDomainMessenger: chainConfig.l1CrossDomainMessenger,
-          L1StandardBridge: chainConfig.l1StandardBridge,
-          OptimismPortal: chainConfig.optimismPortal,
-          L2OutputOracle: chainConfig.l2OutputOracle,
-      
-          // Need to be set to zero for this version of the SDK.
-          StateCommitmentChain: constants.AddressZero,
-          CanonicalTransactionChain: constants.AddressZero,
-          BondManager: constants.AddressZero,
-          }
-      }
-    });
+  return new CrossChainMessenger({
+      l1ChainId: 1,
+      l2ChainId: chainConfig.l2ChainId,
+      l1SignerOrProvider: MAINNET_WALLET,
+      l2SignerOrProvider: chainConfig.l2Signer,
+      contracts: {
+        l1: {
+        AddressManager: chainConfig.addressManager,
+        L1CrossDomainMessenger: chainConfig.l1CrossDomainMessenger,
+        L1StandardBridge: chainConfig.l1StandardBridge,
+        OptimismPortal: chainConfig.optimismPortal,
+        L2OutputOracle: chainConfig.l2OutputOracle,
+    
+        // Need to be set to zero for this version of the SDK.
+        StateCommitmentChain: constants.AddressZero,
+        CanonicalTransactionChain: constants.AddressZero,
+        BondManager: constants.AddressZero,
+        }
+    }
+  });
 }
 
 interface opWithdraw {
@@ -47,44 +47,52 @@ interface opWithdraw {
 // The OP stack sdk methods for proving and relaying withdraws take the transaction hashes that initiated the withdraw as input. This function fetches
 // all such hashes for a given L2 from a given `initialStartBlock`.
 export async function fetchOPBridgeTxs(initialStartBlock: number, chain: ChainInfo, crossChainMessenger: CrossChainMessenger): Promise<opWithdraw[]> {
-    // todo: potentially make this configurable?
-    const blockInterval = 50000;
-    const l2BridgeContract = new Contract(L2_CROSS_DOMAIN_MESSENGER, L2CrossDomainMessengerABI, chain.provider);
+  // todo: potentially make this configurable?
+  const blockInterval = 50000;
+  const l2BridgeContract = new Contract(L2_CROSS_DOMAIN_MESSENGER, L2CrossDomainMessengerABI, chain.provider);
 
-    let res: opWithdraw[] = [];
-    const latestBlockNumber = await chain.provider.getBlockNumber();
-    for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
-      let endBlock = startBlock + blockInterval - 1;
-      if (endBlock > latestBlockNumber) {
-        endBlock = latestBlockNumber;
-      }
+  let res: opWithdraw[] = [];
+  let withdrawLogs: providers.Log[] = [];
 
-      const filter = {
-        address: L2_CROSS_DOMAIN_MESSENGER,
-        topics: [
-          // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
-          l2BridgeContract.filters.SentMessageExtension1().topics![0],
-          utils.hexZeroPad(chain.syncPoolAddress, 32),
-        ],
-        fromBlock: startBlock,
-        toBlock: endBlock
-      };
-
-      const logs = await chain.provider.getLogs(filter);
-        logs.forEach(async (log) => {
-          const event = l2BridgeContract.interface.parseLog(log);
-          const value = event.args.value;
-          const hash = log.transactionHash;
-          const messageStatus = await crossChainMessenger.getMessageStatus(hash);
-          console.log(`Transaction Hash: ${log.transactionHash}`);
-          console.log(`Value: ${event.args.value.toString()}`);
-          console.log(`Withdraw Status: ${MessageStatus[messageStatus]}`);
-          res.push({hash, messageStatus, value});
-      });
-
-      console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+  // fetching all withdraw logs from that originate from the syncpool
+  const latestBlockNumber = await chain.provider.getBlockNumber();
+  for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
+    let endBlock = startBlock + blockInterval - 1;
+    if (endBlock > latestBlockNumber) {
+      endBlock = latestBlockNumber;
     }
-    return res
+
+    const filter = {
+      address: L2_CROSS_DOMAIN_MESSENGER,
+      topics: [
+        // event that gets emitted when the `syncpool` sends eth to the OP stack bridge
+        l2BridgeContract.filters.SentMessageExtension1().topics![0],
+        utils.hexZeroPad(chain.syncPoolAddress, 32),
+      ],
+      fromBlock: startBlock,
+      toBlock: endBlock
+    };
+
+    const logs = await chain.provider.getLogs(filter);
+    withdrawLogs.push(...logs);
+
+    console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+  }
+  
+  // parsing the logs to get the withdraw data
+  const logPromises = withdrawLogs.map(async (log) => {
+    const event = l2BridgeContract.interface.parseLog(log);
+    const value = event.args.value;
+    const hash = log.transactionHash;
+    const messageStatus = await crossChainMessenger.getMessageStatus(hash);
+    console.log(`Transaction Hash: ${log.transactionHash}`);
+    console.log(`Value: ${event.args.value.toString()}`);
+    console.log(`Withdraw Status: ${MessageStatus[messageStatus]}`);
+    res.push({hash, messageStatus, value});
+  });
+  await Promise.all(logPromises);
+  
+  return res
 }
 
 // for a given L2 transaction hash, this function:
