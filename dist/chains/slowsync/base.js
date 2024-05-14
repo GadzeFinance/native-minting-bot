@@ -26,6 +26,7 @@ async function baseSlowSync(chain) {
     const baseMessenger = (0, helpers_1.CreateCrossChainMessenger)(baseMessengerConfig);
     let withdraws = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, chain, baseMessenger);
     withdraws = await (0, helpers_1.proveOrRelayMessage)(withdraws, baseMessenger);
-    return 0;
+    const reportString = await (0, helpers_1.buildOPReport)(withdraws, chain);
+    return reportString;
 }
 exports.baseSlowSync = baseSlowSync;

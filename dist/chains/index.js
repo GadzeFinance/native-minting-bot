@@ -7,7 +7,7 @@ const base_1 = require("./slowsync/base");
 const linea_1 = require("./slowsync/linea");
 async function performSlowSync(chain) {
     if (chain.name === 'linea') {
-        return await (0, linea_1.lineaSlowSync)();
+        return await (0, linea_1.lineaSlowSync)(chain);
     }
     else if (chain.name === 'blast') {
         return await (0, blast_1.blastSlowSync)(chain);

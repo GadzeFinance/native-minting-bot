@@ -6,9 +6,9 @@ import { lineaSlowSync } from './slowsync/linea';
 
 
 
-export async function performSlowSync(chain: ChainInfo): Promise<number> {
+export async function performSlowSync(chain: ChainInfo): Promise<string> {
     if (chain.name === 'linea') {
-        return await lineaSlowSync();
+        return await lineaSlowSync(chain);
     } else if (chain.name === 'blast') {
         return await blastSlowSync(chain);
     } else if (chain.name === 'mode') {

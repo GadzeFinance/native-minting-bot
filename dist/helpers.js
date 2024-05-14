@@ -3,11 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateStartBlock = exports.sendDiscordMessage = exports.proveOrRelayMessage = exports.fetchOPBridgeTxs = exports.CreateCrossChainMessenger = void 0;
+exports.fetchSyncPoolTxs = exports.calculateStartBlock = exports.sendDiscordMessage = exports.buildOPReport = exports.proveOrRelayMessage = exports.fetchOPBridgeTxs = exports.CreateCrossChainMessenger = void 0;
 const ethers_1 = require("ethers");
 const L2CrossDomainMessenger_json_1 = __importDefault(require("./abis/L2CrossDomainMessenger.json"));
 const sdk_1 = require("@eth-optimism/sdk");
 const config_1 = require("./chains/config");
+const date_fns_1 = require("date-fns");
 // Generating a CrossChainMessenger instance for a specific L2 chain
 function CreateCrossChainMessenger(chainConfig) {
     return new sdk_1.CrossChainMessenger({
@@ -34,7 +35,6 @@ exports.CreateCrossChainMessenger = CreateCrossChainMessenger;
 // The OP stack sdk methods for proving and relaying withdraws take the transaction hashes that initiated the withdraw as input. This function fetches
 // all such hashes for a given L2 from a given `initialStartBlock`.
 async function fetchOPBridgeTxs(initialStartBlock, chain, crossChainMessenger) {
-    // todo: potentially make this configurable?
     const blockInterval = 50000;
     const l2BridgeContract = new ethers_1.Contract(config_1.L2_CROSS_DOMAIN_MESSENGER, L2CrossDomainMessenger_json_1.default, chain.provider);
     let res = [];
@@ -75,7 +75,7 @@ async function fetchOPBridgeTxs(initialStartBlock, chain, crossChainMessenger) {
     return res;
 }
 exports.fetchOPBridgeTxs = fetchOPBridgeTxs;
-// for a given L2 transaction hash, this function:
+// for a given OP stack L2 transaction hash, this function:
 // 1. gets the status of the transaction
 // 2. `proves` or `relays` the transaction if in ready state
 async function proveOrRelayMessage(withdraws, crossChainMessenger) {
@@ -94,8 +94,29 @@ async function proveOrRelayMessage(withdraws, crossChainMessenger) {
     return withdraws;
 }
 exports.proveOrRelayMessage = proveOrRelayMessage;
+// Builds a chain withdraw status report from OP stack withdraws
+async function buildOPReport(withdraws, chain) {
+    let totalEth = ethers_1.BigNumber.from(0);
+    let res = "";
+    for (const withdraw of withdraws) {
+        // only include withdraws that haven't been fully processed yet
+        if (withdraw.messageStatus != sdk_1.MessageStatus.RELAYED) {
+            totalEth = totalEth.add(withdraw.value);
+            const withdrawBlockNumber = await chain.provider.getTransaction(withdraw.hash).then((tx) => tx.blockNumber);
+            const block = await chain.provider.getBlock(withdrawBlockNumber);
+            if (chain.name === 'blast') {
+            }
+            const newDate = (0, date_fns_1.addDays)(new Date(block.timestamp * 1000), 7);
+            const formattedDate = (0, date_fns_1.format)(newDate, 'MMMM do');
+            console.log(formattedDate);
+        }
+    }
+    return "bruh";
+}
+exports.buildOPReport = buildOPReport;
 // sends a message to a discord webhook
 async function sendDiscordMessage(message) {
+    console.log(message);
     // try {
     //     await axios.post(DISCORD_WEBHOOK_URL, {
     //       username: 'Bridge Bot',
@@ -117,3 +138,26 @@ async function calculateStartBlock(provider, blockTimeSeconds, daysToIndex) {
     return Math.max(currentBlock - blocksToIndex, 0);
 }
 exports.calculateStartBlock = calculateStartBlock;
+// a generic function to filter for `sync` calls from `syncpool` to the bridge
+async function fetchSyncPoolTxs(initialStartBlock, chain) {
+    const blockInterval = 50000;
+    let res = [];
+    const latestBlockNumber = await chain.provider.getBlockNumber();
+    for (let startBlock = initialStartBlock; startBlock <= latestBlockNumber; startBlock += blockInterval) {
+        let endBlock = startBlock + blockInterval - 1;
+        if (endBlock > latestBlockNumber) {
+            endBlock = latestBlockNumber;
+        }
+        const filter = {
+            address: chain.syncPoolAddress,
+            topics: ["0xdb49c955bbc09ebed0b7337419bcbc9ce581910150a5b1f91159e653a0a4978e"],
+            fromBlock: startBlock,
+            toBlock: endBlock
+        };
+        const logs = await chain.provider.getLogs(filter);
+        console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
+        res.push(...logs);
+    }
+    return res;
+}
+exports.fetchSyncPoolTxs = fetchSyncPoolTxs;

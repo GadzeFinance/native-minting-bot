@@ -23,7 +23,7 @@ const blastMessagePassedInterface = new utils.Interface(BlastMessagePassedEvent)
 const blastOptimismPortalContract = new Contract(OPTIMISM_PORTAL, BlastOptimismPortal, MAINNET_WALLET);
 const blastEthYieldManagerContract = new Contract(BLAST_ETH_YIELD_MANAGER, BlastEthYieldManger, MAINNET_PROVIDER);
 
-export async function blastSlowSync(chain: ChainInfo): Promise<number> {
+export async function blastSlowSync(chain: ChainInfo): Promise<string> {
     const blastMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: BLAST_CHAIN_ID,
         l2Signer: chain.wallet,
@@ -37,7 +37,6 @@ export async function blastSlowSync(chain: ChainInfo): Promise<number> {
 
     // TODO: Reduce to 17 days once we have cleared out the backlog
     const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21)
-
     const withdraws = await fetchOPBridgeTxs(initialStartBlock, chain, blastMessenger)
 
     // Blast is a OP stack chain, but additional inputs are required for finalizing messages due to yield management
@@ -72,11 +71,9 @@ export async function blastSlowSync(chain: ChainInfo): Promise<number> {
                 data: lowLevelMessage.message
             };
 
-            const tx = await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
-            console.log("Finalize Withdrawal Transaction: ", tx.hash);
-
+            await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
         }
     }
 
-    return 0;
+    return "blast";
 }

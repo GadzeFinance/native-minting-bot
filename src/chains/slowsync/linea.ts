@@ -1,6 +1,7 @@
 
 import { LineaSDK, Message, OnChainMessageStatus } from "@consensys/linea-sdk";
-import { PRIVATE_KEY } from "../config";
+import { ChainInfo, PRIVATE_KEY } from "../config";
+import { calculateStartBlock, fetchSyncPoolTxs } from "../../helpers";
 
 const sdk = new LineaSDK({
     l1RpcUrl: "https://mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52",
@@ -19,9 +20,13 @@ interface LineaTransaction {
     withdrawHash: string;
 }
 
-export async function lineaSlowSync(): Promise<number> {
+export async function lineaSlowSync(chain: ChainInfo): Promise<string> {
     // todo: filter to get all of the linea transaction hashes and the withdrawHash that is emitted from said contract
     let lineaTransactions: LineaTransaction[] = [];
+    
+    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 10);
+    const withdraws = await fetchSyncPoolTxs(initialStartBlock, chain);
+
 
     for (const transaction of lineaTransactions) {
         const messageStatus = await l1ClaimingService.getMessageStatus(transaction.transactionHash);
@@ -31,5 +36,5 @@ export async function lineaSlowSync(): Promise<number> {
         }
     }
 
-    return 0;
+    return "value";
 } 

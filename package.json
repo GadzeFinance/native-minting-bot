@@ -14,7 +14,8 @@
     "@eth-optimism/sdk": "^3.3.0",
     "axios": "^1.4.0",
     "dotenv": "^16.4.5",
-    "ethers": "^5"
+    "ethers": "^5",
+    "data-fns": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.8",

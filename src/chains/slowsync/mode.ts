@@ -14,7 +14,7 @@ const L2_OUTPUT_ORACLE = '0x4317ba146D4933D889518a3e5E11Fe7a53199b04';
 
 const MODE_CHAIN_ID = 34443;
 
-export async function modeSlowSync(chain: ChainInfo): Promise<number> {
+export async function modeSlowSync(chain: ChainInfo): Promise<string> {
     // TODO: Reduce to 10 days once we have cleared out the backlog
     const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21)
 
@@ -34,5 +34,5 @@ export async function modeSlowSync(chain: ChainInfo): Promise<number> {
 
     withdraws =  await proveOrRelayMessage(withdraws, modeMessenger);
 
-    return 0;
+    return "something bro";
 }

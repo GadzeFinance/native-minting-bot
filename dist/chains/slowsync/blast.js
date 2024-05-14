@@ -14,40 +14,6 @@ const BlastOptimismPortal_json_1 = __importDefault(require("../../abis/BlastOpti
 const BlastMessagePassedEvent = [
     "event MessagePassed(uint256 indexed nonce, address indexed sender, address indexed target, uint256 value, uint256 gasLimit, bytes data, bytes32 withdrawalHash)"
 ];
-// const BlastProvenWithdrawals = [{
-//     "inputs": [
-//         {
-//             "internalType": "bytes32",
-//             "name": "",
-//             "type": "bytes32"
-//         }
-//     ],
-//     "name": "provenWithdrawals",
-//     "outputs": [
-//         {
-//             "internalType": "bytes32",
-//             "name": "outputRoot",
-//             "type": "bytes32"
-//         },
-//         {
-//             "internalType": "uint128",
-//             "name": "timestamp",
-//             "type": "uint128"
-//         },
-//         {
-//             "internalType": "uint128",
-//             "name": "l2OutputIndex",
-//             "type": "uint128"
-//         },
-//         {
-//             "internalType": "uint256",
-//             "name": "requestId",
-//             "type": "uint256"
-//         }
-//     ],
-//     "stateMutability": "view",
-//     "type": "function"
-// }];
 // Configuring Blast Contracts
 const ADDRESS_MANAGER = '0xE064B565Cf2A312a3e66Fe4118890583727380C0';
 const L1_CROSS_DOMAIN_MESSENGER = '0x5D4472f31Bd9385709ec61305AFc749F0fA8e9d0';
@@ -102,10 +68,9 @@ async function blastSlowSync(chain) {
                 gasLimit: lowLevelMessage.minGasLimit,
                 data: lowLevelMessage.message
             };
-            const tx = await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
-            console.log("Finalize Withdrawal Transaction: ", tx.hash);
+            await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
         }
     }
-    return 0;
+    return "blast";
 }
 exports.blastSlowSync = blastSlowSync;
