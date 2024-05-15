@@ -1,5 +1,5 @@
 import { MessageStatus } from '@eth-optimism/sdk';
-import { calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs } from '../../helpers';
+import { buildOPReport, calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs } from '../../helpers';
 import { ChainInfo, MAINNET_PROVIDER, MAINNET_WALLET } from '../config';
 import { Contract, utils } from 'ethers';
 import BlastEthYieldManger from '../../abis/BlastEthYieldManager.json'
@@ -44,6 +44,7 @@ export async function blastSlowSync(chain: ChainInfo): Promise<string> {
         if (withdraw.messageStatus === MessageStatus.READY_TO_PROVE) {
             console.log("Proving message: ", withdraw.hash);
             await blastMessenger.proveMessage(withdraw.hash);
+            withdraw.messageStatus = MessageStatus.READY_FOR_RELAY;
         } else if (withdraw.messageStatus === MessageStatus.READY_FOR_RELAY) {
             console.log("Relaying message: ", withdraw.hash);
             // extract the withdraw hash from the events log (this is not a transaction hash, but a hash of the transaction data)
@@ -58,7 +59,7 @@ export async function blastSlowSync(chain: ChainInfo): Promise<string> {
             const lastHintId = await blastEthYieldManagerContract.getLastCheckpointId();
             const WithdrawHintId = await blastEthYieldManagerContract.findCheckpointHint(provenWithdrawData.requestId, 10, lastHintId);
 
-            // construct inputs for the `finalizeMessage` call
+            // construct inputs for the blast `finalizeMessage` call
             const crossChainMessage = await blastMessenger.toCrossChainMessage(withdraw.hash, 0);
             const lowLevelMessage = await blastMessenger.toLowLevelMessage(crossChainMessage, 0);
 
@@ -72,8 +73,10 @@ export async function blastSlowSync(chain: ChainInfo): Promise<string> {
             };
 
             await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
+            withdraw.messageStatus = MessageStatus.READY_TO_PROVE;
         }
     }
 
+    const reportString = await buildOPReport(withdraws, chain);
     return "blast";
 }

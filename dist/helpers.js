@@ -96,22 +96,29 @@ async function proveOrRelayMessage(withdraws, crossChainMessenger) {
 exports.proveOrRelayMessage = proveOrRelayMessage;
 // Builds a chain withdraw status report from OP stack withdraws
 async function buildOPReport(withdraws, chain) {
-    let totalEth = ethers_1.BigNumber.from(0);
+    let totalWei = ethers_1.BigNumber.from(0);
     let res = "";
     for (const withdraw of withdraws) {
         // only include withdraws that haven't been fully processed yet
         if (withdraw.messageStatus != sdk_1.MessageStatus.RELAYED) {
-            totalEth = totalEth.add(withdraw.value);
+            totalWei = totalWei.add(withdraw.value);
             const withdrawBlockNumber = await chain.provider.getTransaction(withdraw.hash).then((tx) => tx.blockNumber);
             const block = await chain.provider.getBlock(withdrawBlockNumber);
+            let expectedDate = (0, date_fns_1.addDays)(new Date(block.timestamp * 1000), 8);
             if (chain.name === 'blast') {
+                // blast has a 13 day challenge period
+                expectedDate = (0, date_fns_1.addDays)(new Date(block.timestamp * 1000), 13);
             }
-            const newDate = (0, date_fns_1.addDays)(new Date(block.timestamp * 1000), 7);
-            const formattedDate = (0, date_fns_1.format)(newDate, 'MMMM do');
-            console.log(formattedDate);
+            // add the withdraw data to a formatted string to be sent to discord
+            const formattedDate = (0, date_fns_1.format)(expectedDate, 'MMMM do');
+            const totalEther = parseFloat(ethers_1.utils.formatEther(withdraw.value)).toFixed(2);
+            res += `${totalEther} ETH expected by ${formattedDate}\n`;
         }
     }
-    return "bruh";
+    const totalEther = parseFloat(ethers_1.utils.formatEther(totalWei)).toFixed(2);
+    res = `**${chain.name}:** ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
+    console.log(res);
+    return res;
 }
 exports.buildOPReport = buildOPReport;
 // sends a message to a discord webhook

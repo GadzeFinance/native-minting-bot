@@ -26,6 +26,7 @@ async function modeSlowSync(chain) {
     const modeMessenger = (0, helpers_1.CreateCrossChainMessenger)(modeMessengerConfig);
     let withdraws = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, chain, modeMessenger);
     withdraws = await (0, helpers_1.proveOrRelayMessage)(withdraws, modeMessenger);
-    return "something bro";
+    const reportString = await (0, helpers_1.buildOPReport)(withdraws, chain);
+    return reportString;
 }
 exports.modeSlowSync = modeSlowSync;

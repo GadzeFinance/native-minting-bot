@@ -4,7 +4,10 @@ import { modeSlowSync } from './slowsync/mode';
 import { baseSlowSync } from './slowsync/base';
 import { lineaSlowSync } from './slowsync/linea';
 
-
+interface SyncReport {
+    totalWei: number
+    discordMessage: string
+}
 
 export async function performSlowSync(chain: ChainInfo): Promise<string> {
     if (chain.name === 'linea') {

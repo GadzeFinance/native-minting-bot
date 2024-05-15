@@ -44,6 +44,7 @@ async function blastSlowSync(chain) {
         if (withdraw.messageStatus === sdk_1.MessageStatus.READY_TO_PROVE) {
             console.log("Proving message: ", withdraw.hash);
             await blastMessenger.proveMessage(withdraw.hash);
+            withdraw.messageStatus = sdk_1.MessageStatus.READY_FOR_RELAY;
         }
         else if (withdraw.messageStatus === sdk_1.MessageStatus.READY_FOR_RELAY) {
             console.log("Relaying message: ", withdraw.hash);
@@ -57,7 +58,7 @@ async function blastSlowSync(chain) {
             console.log("Proven Withdraw Data: ", provenWithdrawData.requestId.toString());
             const lastHintId = await blastEthYieldManagerContract.getLastCheckpointId();
             const WithdrawHintId = await blastEthYieldManagerContract.findCheckpointHint(provenWithdrawData.requestId, 10, lastHintId);
-            // construct inputs for the `finalizeMessage` call
+            // construct inputs for the blast `finalizeMessage` call
             const crossChainMessage = await blastMessenger.toCrossChainMessage(withdraw.hash, 0);
             const lowLevelMessage = await blastMessenger.toLowLevelMessage(crossChainMessage, 0);
             const withdrawalTx = {
@@ -69,8 +70,10 @@ async function blastSlowSync(chain) {
                 data: lowLevelMessage.message
             };
             await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
+            withdraw.messageStatus = sdk_1.MessageStatus.READY_TO_PROVE;
         }
     }
+    const reportString = await (0, helpers_1.buildOPReport)(withdraws, chain);
     return "blast";
 }
 exports.blastSlowSync = blastSlowSync;

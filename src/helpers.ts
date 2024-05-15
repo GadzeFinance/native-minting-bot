@@ -115,28 +115,33 @@ export async function proveOrRelayMessage(withdraws: opWithdraw[], crossChainMes
 
 // Builds a chain withdraw status report from OP stack withdraws
 export async function buildOPReport(withdraws: opWithdraw[], chain: ChainInfo): Promise<string> {
-  let totalEth: BigNumber = BigNumber.from(0);
+  let totalWei: BigNumber = BigNumber.from(0);
   let res = "";
   for (const withdraw of withdraws) {
     // only include withdraws that haven't been fully processed yet
     if (withdraw.messageStatus != MessageStatus.RELAYED) {
-      totalEth = totalEth.add(withdraw.value);
+      totalWei = totalWei.add(withdraw.value);
       
       const withdrawBlockNumber = await chain.provider.getTransaction(withdraw.hash).then((tx) => tx.blockNumber);
 
       const block = await chain.provider.getBlock(withdrawBlockNumber as number);
       
+      let expectedDate = addDays(new Date(block.timestamp * 1000), 8);
       if (chain.name === 'blast') { 
-
+        // blast has a 13 day challenge period
+        expectedDate = addDays(new Date(block.timestamp * 1000), 13);
       }
-      const newDate = addDays(new Date(block.timestamp * 1000), 7);
-      const formattedDate = format(newDate, 'MMMM do');
-
-      console.log(formattedDate)
+      
+      // add the withdraw data to a formatted string to be sent to discord
+      const formattedDate = format(expectedDate, 'MMMM do');
+      const totalEther = parseFloat(utils.formatEther(withdraw.value)).toFixed(2);
+      res += `${totalEther} ETH expected by ${formattedDate}\n`;
     }
   }
-
-  return "bruh";
+  const totalEther = parseFloat(utils.formatEther(totalWei)).toFixed(2);
+  res = `**${chain.name}:** ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
+  console.log(res);
+  return res;
 }
 
 // sends a message to a discord webhook
