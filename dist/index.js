@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handler = void 0;
 const L2SyncPool_json_1 = __importDefault(require("./abis/L2SyncPool.json"));
+const DummyToken_json_1 = __importDefault(require("./abis/DummyToken.json"));
 const ethers_1 = require("ethers");
 const config_1 = require("./chains/config");
 const chains_1 = require("./chains");
@@ -13,15 +14,17 @@ async function handler() {
     console.log('Lambda function has started execution.');
     // check if EOA is running low on funds
     await eBegger(config_1.CHAINS);
-    let totalEthPerChain = {};
+    const bridgeBalances = {};
     // Create a formatted message for Discord to append reporting data to:
-    let discordMessage = '**ETH in Withdraw Process per Chain** \n--------------------------------------- ```';
+    let discordMessage = '**ETH in Withdraw Process per Chain** \n```';
     for (const chain of config_1.CHAINS) {
         console.log(`Processing transactions for chain: ${chain.name}`);
         // perform fast sync and slow sync for each chain and return any errors to discord
         try {
-            // await performFastSync(chain);
-            await (0, chains_1.performSlowSync)(chain);
+            await performFastSync(chain);
+            const slowSyncResult = await (0, chains_1.performSlowSync)(chain);
+            discordMessage += slowSyncResult.discordReport;
+            bridgeBalances[chain.name] = slowSyncResult.totalWei;
         }
         catch (error) {
             console.log(`Error occurred while syncing ${chain.name}: ${error}.`);
@@ -29,13 +32,9 @@ async function handler() {
             await (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${truncatedError}\`\`\``);
         }
     }
-    Object.entries(totalEthPerChain).forEach(([chainName, ethAmount]) => {
-        discordMessage += `${chainName}: ${ethAmount} ETH\n`;
-    });
-    discordMessage += '```';
-    if (Object.keys(totalEthPerChain).length != 0) {
-        await (0, helpers_1.sendDiscordMessage)(discordMessage);
-    }
+    // check if dummy ETH invariant is broken for each chain
+    await checkDummyETH(config_1.CHAINS, bridgeBalances);
+    await (0, helpers_1.sendDiscordMessage)(discordMessage + '```');
     console.log('All chains processed.');
 }
 exports.handler = handler;
@@ -74,6 +73,18 @@ async function eBegger(chains) {
         const balance = await chain.provider.getBalance(chain.wallet.address);
         if (balance.lt(ethers_1.utils.parseEther("0.02"))) {
             (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH ❗️❗️`);
+        }
+    }
+}
+// checks the invariant for each chain that `dummyETH.TotalSupply` == `ETH in Withdraw Process`
+async function checkDummyETH(chains, bridgeBalances) {
+    for (const chain of chains) {
+        const dummyEthContract = new ethers_1.ethers.Contract(chain.dummyEthAddress, DummyToken_json_1.default, config_1.MAINNET_PROVIDER);
+        const dummyEthSupply = await dummyEthContract.totalSupply();
+        const bridgeBalance = bridgeBalances[chain.name];
+        const difference = dummyEthSupply.sub(bridgeBalance).abs();
+        if (difference.gte(ethers_1.utils.parseEther("1"))) {
+            (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Broken invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(ethers_1.utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(ethers_1.utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
         }
     }
 }

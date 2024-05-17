@@ -94,7 +94,7 @@ async function proveOrRelayMessage(withdraws, crossChainMessenger) {
     return withdraws;
 }
 exports.proveOrRelayMessage = proveOrRelayMessage;
-// Builds a chain withdraw status report from OP stack withdraws
+// Builds a slow sync result string from OP stack withdraws
 async function buildOPReport(withdraws, chain) {
     let totalWei = ethers_1.BigNumber.from(0);
     let res = "";
@@ -116,14 +116,14 @@ async function buildOPReport(withdraws, chain) {
         }
     }
     const totalEther = parseFloat(ethers_1.utils.formatEther(totalWei)).toFixed(2);
-    res = `**${chain.name}:** ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
+    res = `${chain.name}: ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
     console.log(res);
-    return res;
+    return { totalWei, discordReport: res };
 }
 exports.buildOPReport = buildOPReport;
 // sends a message to a discord webhook
 async function sendDiscordMessage(message) {
-    console.log(message);
+    console.log(`Sending message to discord: ${message}`);
     // try {
     //     await axios.post(DISCORD_WEBHOOK_URL, {
     //       username: 'Bridge Bot',

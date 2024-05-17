@@ -4,6 +4,7 @@ import { ChainInfo, MAINNET_PROVIDER, MAINNET_WALLET } from '../config';
 import { Contract, utils } from 'ethers';
 import BlastEthYieldManger from '../../abis/BlastEthYieldManager.json'
 import BlastOptimismPortal from '../../abis/BlastOptimismPortal.json'
+import { SlowSyncResult } from '..';
 
 // Blast specific interfaces
 const BlastMessagePassedEvent = [
@@ -23,7 +24,7 @@ const blastMessagePassedInterface = new utils.Interface(BlastMessagePassedEvent)
 const blastOptimismPortalContract = new Contract(OPTIMISM_PORTAL, BlastOptimismPortal, MAINNET_WALLET);
 const blastEthYieldManagerContract = new Contract(BLAST_ETH_YIELD_MANAGER, BlastEthYieldManger, MAINNET_PROVIDER);
 
-export async function blastSlowSync(chain: ChainInfo): Promise<string> {
+export async function blastSlowSync(chain: ChainInfo): Promise<SlowSyncResult> {
     const blastMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: BLAST_CHAIN_ID,
         l2Signer: chain.wallet,
@@ -36,7 +37,7 @@ export async function blastSlowSync(chain: ChainInfo): Promise<string> {
     const blastMessenger = CreateCrossChainMessenger(blastMessengerConfig);
 
     // TODO: Reduce to 17 days once we have cleared out the backlog
-    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21)
+    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 30)
     const withdraws = await fetchOPBridgeTxs(initialStartBlock, chain, blastMessenger)
 
     // Blast is a OP stack chain, but additional inputs are required for finalizing messages due to yield management
@@ -73,10 +74,9 @@ export async function blastSlowSync(chain: ChainInfo): Promise<string> {
             };
 
             await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
-            withdraw.messageStatus = MessageStatus.READY_TO_PROVE;
+            withdraw.messageStatus = MessageStatus.RELAYED;
         }
     }
 
-    const reportString = await buildOPReport(withdraws, chain);
-    return "blast";
+    return await buildOPReport(withdraws, chain);
 }

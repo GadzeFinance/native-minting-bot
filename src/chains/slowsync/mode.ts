@@ -1,6 +1,7 @@
 import { Wallet } from 'ethers';
 import { buildOPReport, calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo, PRIVATE_KEY } from '../config';
+import { SlowSyncResult } from '..';
 
 // configuring mode contracts
 const ADDRESS_MANAGER = '0x50eF494573f28Cad6B64C31b7a00Cdaa48306e15';
@@ -11,9 +12,9 @@ const L2_OUTPUT_ORACLE = '0x4317ba146D4933D889518a3e5E11Fe7a53199b04';
 
 const MODE_CHAIN_ID = 34443;
 
-export async function modeSlowSync(chain: ChainInfo): Promise<string> {
+export async function modeSlowSync(chain: ChainInfo): Promise<SlowSyncResult> {
     // TODO: Reduce to 10 days once we have cleared out the backlog
-    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21)
+    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 30)
 
     const modeMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: MODE_CHAIN_ID,
@@ -31,7 +32,5 @@ export async function modeSlowSync(chain: ChainInfo): Promise<string> {
 
     withdraws =  await proveOrRelayMessage(withdraws, modeMessenger);
 
-    const reportString = await buildOPReport(withdraws, chain);
-
-    return reportString;
+    return await buildOPReport(withdraws, chain);
 }

@@ -1,6 +1,7 @@
 import { Wallet } from 'ethers';
 import { buildOPReport, calculateStartBlock, CreateCrossChainMessenger, CrossChainMessengerConfig, fetchOPBridgeTxs, proveOrRelayMessage } from '../../helpers';
 import { ChainInfo, PRIVATE_KEY } from '../config';
+import { SlowSyncResult } from '..';
 
 // Configuring base contracts
 const ADDRESS_MANAGER = '0x8EfB6B5c4767B09Dc9AA6Af4eAA89F749522BaE2';
@@ -10,9 +11,9 @@ const OPTIMISM_PORTAL = '0x49048044D57e1C92A77f79988d21Fa8fAF74E97e';
 const L2_OUTPUT_ORACLE = '0x56315b90c40730925ec5485cf004d835058518A0';
 const BASE_CHAIN_ID = 8453; 
 
-export async function baseSlowSync(chain: ChainInfo): Promise<string> {
+export async function baseSlowSync(chain: ChainInfo): Promise<SlowSyncResult> {
     // TODO: Reduce to 10 days once we have cleared out the backlog
-    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 21);
+    const initialStartBlock = await calculateStartBlock(chain.provider, 2, 30);
     const baseMessengerConfig: CrossChainMessengerConfig = {
         l2ChainId: BASE_CHAIN_ID,
         l2Signer: new Wallet(PRIVATE_KEY, chain.provider),
@@ -26,8 +27,6 @@ export async function baseSlowSync(chain: ChainInfo): Promise<string> {
     
     let withdraws = await fetchOPBridgeTxs(initialStartBlock, chain, baseMessenger);
     withdraws = await proveOrRelayMessage(withdraws, baseMessenger);
-
-    const reportString = await buildOPReport(withdraws, chain);
     
-    return reportString;
+    return await buildOPReport(withdraws, chain);
 }

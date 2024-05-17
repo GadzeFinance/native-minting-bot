@@ -13,7 +13,7 @@ const L2_OUTPUT_ORACLE = '0x4317ba146D4933D889518a3e5E11Fe7a53199b04';
 const MODE_CHAIN_ID = 34443;
 async function modeSlowSync(chain) {
     // TODO: Reduce to 10 days once we have cleared out the backlog
-    const initialStartBlock = await (0, helpers_1.calculateStartBlock)(chain.provider, 2, 21);
+    const initialStartBlock = await (0, helpers_1.calculateStartBlock)(chain.provider, 2, 30);
     const modeMessengerConfig = {
         l2ChainId: MODE_CHAIN_ID,
         l2Signer: new ethers_1.Wallet(config_1.PRIVATE_KEY, chain.provider),
@@ -26,7 +26,6 @@ async function modeSlowSync(chain) {
     const modeMessenger = (0, helpers_1.CreateCrossChainMessenger)(modeMessengerConfig);
     let withdraws = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, chain, modeMessenger);
     withdraws = await (0, helpers_1.proveOrRelayMessage)(withdraws, modeMessenger);
-    const reportString = await (0, helpers_1.buildOPReport)(withdraws, chain);
-    return reportString;
+    return await (0, helpers_1.buildOPReport)(withdraws, chain);
 }
 exports.modeSlowSync = modeSlowSync;

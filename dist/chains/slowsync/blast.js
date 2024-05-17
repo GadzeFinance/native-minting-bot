@@ -37,7 +37,7 @@ async function blastSlowSync(chain) {
     };
     const blastMessenger = (0, helpers_1.CreateCrossChainMessenger)(blastMessengerConfig);
     // TODO: Reduce to 17 days once we have cleared out the backlog
-    const initialStartBlock = await (0, helpers_1.calculateStartBlock)(chain.provider, 2, 21);
+    const initialStartBlock = await (0, helpers_1.calculateStartBlock)(chain.provider, 2, 30);
     const withdraws = await (0, helpers_1.fetchOPBridgeTxs)(initialStartBlock, chain, blastMessenger);
     // Blast is a OP stack chain, but additional inputs are required for finalizing messages due to yield management
     for (const withdraw of withdraws) {
@@ -70,10 +70,9 @@ async function blastSlowSync(chain) {
                 data: lowLevelMessage.message
             };
             await blastOptimismPortalContract.finalizeWithdrawalTransaction(WithdrawHintId, withdrawalTx);
-            withdraw.messageStatus = sdk_1.MessageStatus.READY_TO_PROVE;
+            withdraw.messageStatus = sdk_1.MessageStatus.RELAYED;
         }
     }
-    const reportString = await (0, helpers_1.buildOPReport)(withdraws, chain);
-    return "blast";
+    return await (0, helpers_1.buildOPReport)(withdraws, chain);
 }
 exports.blastSlowSync = blastSlowSync;

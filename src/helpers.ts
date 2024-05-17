@@ -4,6 +4,7 @@ import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
 import { ChainInfo, DISCORD_WEBHOOK_URL, L2_CROSS_DOMAIN_MESSENGER, MAINNET_WALLET } from './chains/config';
 import { format, addDays } from 'date-fns';
 import axios from 'axios';
+import { SlowSyncResult } from './chains';
 
 export interface CrossChainMessengerConfig {
   l2ChainId: number;
@@ -113,8 +114,8 @@ export async function proveOrRelayMessage(withdraws: opWithdraw[], crossChainMes
   return withdraws;
 }
 
-// Builds a chain withdraw status report from OP stack withdraws
-export async function buildOPReport(withdraws: opWithdraw[], chain: ChainInfo): Promise<string> {
+// Builds a slow sync result string from OP stack withdraws
+export async function buildOPReport(withdraws: opWithdraw[], chain: ChainInfo): Promise<SlowSyncResult> {
   let totalWei: BigNumber = BigNumber.from(0);
   let res = "";
   for (const withdraw of withdraws) {
@@ -139,22 +140,21 @@ export async function buildOPReport(withdraws: opWithdraw[], chain: ChainInfo): 
     }
   }
   const totalEther = parseFloat(utils.formatEther(totalWei)).toFixed(2);
-  res = `**${chain.name}:** ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
+  res = `${chain.name}: ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
   console.log(res);
-  return res;
+  return { totalWei, discordReport: res };
 }
 
 // sends a message to a discord webhook
 export async function sendDiscordMessage(message: string): Promise<void> {
-  console.log(message);
-  // try {
-  //     await axios.post(DISCORD_WEBHOOK_URL, {
-  //       username: 'Bridge Bot',
-  //       content: message
-  //     });
-  // } catch (error) {
-  //     console.error(`Failed to send message to discord: ${error}`);
-  // }
+  try {
+      await axios.post(DISCORD_WEBHOOK_URL, {
+        username: 'Bridge Bot',
+        content: message
+      });
+  } catch (error) {
+      console.error(`Failed to send message to discord: ${error}`);
+  }
 }
 
 // calculate start block for fetching bridge transactions

@@ -3,13 +3,15 @@ import { blastSlowSync } from './slowsync/blast';
 import { modeSlowSync } from './slowsync/mode';
 import { baseSlowSync } from './slowsync/base';
 import { lineaSlowSync } from './slowsync/linea';
+import { BigNumber } from 'ethers';
 
-interface SyncReport {
-    totalWei: number
-    discordMessage: string
+// all chain slow syncs should return the total wei in the bridge and a formatted discord report string
+export interface SlowSyncResult {
+    totalWei: BigNumber,
+    discordReport: string
 }
 
-export async function performSlowSync(chain: ChainInfo): Promise<string> {
+export async function performSlowSync(chain: ChainInfo): Promise<SlowSyncResult> {
     if (chain.name === 'linea') {
         return await lineaSlowSync(chain);
     } else if (chain.name === 'blast') {
