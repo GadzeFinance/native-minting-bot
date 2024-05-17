@@ -40,3 +40,21 @@ project-root/
 │       └── ...
 └── dist/                  # Compiled JavaScript files to be deployed to lambda
 ```
+
+## Running the Project
+
+1. **Install Dependencies**: Install the project dependencies using:
+    ```sh
+    pnpm install
+    ```
+
+2. **Set Environment Variables**: add the `PRIVATE_KEY` for the EOA assiocated with the bot to an `.env` file
+
+3. **Compile and Run**: Compile the TypeScript code and run the bot using:
+    ```sh
+    pnpm start
+    ```
+
+## GitHub Actions
+
+The project is configured to run a daily job at 7:00 AM UTC using GitHub Actions. The GitHub Actions workflow is defined in `.github/workflows/main.yml`:
