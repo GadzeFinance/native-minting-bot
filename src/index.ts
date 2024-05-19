@@ -11,7 +11,6 @@ export async function handler(): Promise<void> {
   // check if EOA is running low on funds
   await eBegger(CHAINS);
 
-
   const bridgeBalances: BridgeBalances = {};
 
   // Create a formatted message for Discord to append reporting data to:
@@ -33,6 +32,8 @@ export async function handler(): Promise<void> {
   }
 
   // check if dummy ETH invariant is broken for each chain
+  // todo: just burning github runner time here, break monitoring out a separate job ? 
+  setTimeout(() => console.log("waited 3 minutes for mainnet state to update"), 3 * 60 * 1000);  
   await checkDummyETH(CHAINS, bridgeBalances);
 
   await sendDiscordMessage(discordMessage + '```');

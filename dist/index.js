@@ -33,6 +33,8 @@ async function handler() {
         }
     }
     // check if dummy ETH invariant is broken for each chain
+    // todo: just burning github runner time here, break monitoring out a separate job ? 
+    setTimeout(() => console.log("waited 2 minutes for mainnet state to update"), 3 * 60 * 1000);
     await checkDummyETH(config_1.CHAINS, bridgeBalances);
     await (0, helpers_1.sendDiscordMessage)(discordMessage + '```');
     console.log('All chains processed.');
@@ -84,7 +86,7 @@ async function checkDummyETH(chains, bridgeBalances) {
         const bridgeBalance = bridgeBalances[chain.name];
         const difference = dummyEthSupply.sub(bridgeBalance).abs();
         if (difference.gte(ethers_1.utils.parseEther("1"))) {
-            (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Broken invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(ethers_1.utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(ethers_1.utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
+            (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(ethers_1.utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(ethers_1.utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
         }
     }
 }
