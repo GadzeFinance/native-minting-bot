@@ -1,7 +1,8 @@
 name: Run L2 Bot
 
 on:
-  - cron: '0 7 * * *' # Run every day at 7:00 AM UTC
+  schedule:
+    - cron: '0 7 * * *' # Run every day at 7:00 AM UTC (2 AM EST)
 
 jobs:
   run-typescript-project:
