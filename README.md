@@ -57,4 +57,4 @@ project-root/
 
 ## GitHub Actions
 
-The project is configured to run a daily job at 7:00 AM UTC using GitHub Actions. The GitHub Actions workflow is defined in `.github/workflows/main.yml`.
+The project is configured to run a daily job at 7:00 AM UTC using GitHub Actions. The GitHub Actions workflow is defined in [main.yml](https://github.com/GadzeFinance/native-minting-bot/blob/main/.github/workflows/main.yml).
