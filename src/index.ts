@@ -101,7 +101,7 @@ async function checkDummyETH(chains: ChainInfo[], bridgeBalances: BridgeBalances
 
     
     if (difference.gte(utils.parseEther("1"))) {
-      sendDiscordMessage(`❗️❗️ **Alert:** Broken invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
+      sendDiscordMessage(`❗️❗️ **Alert:** Invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
     }
   }
 }
