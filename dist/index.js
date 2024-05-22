@@ -32,9 +32,9 @@ async function handler() {
             await (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${truncatedError}\`\`\``);
         }
     }
+    // wait for 5 minutes to get time for mainnet and L2 state to sync before checking the invariant
+    await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
     // check if dummy ETH invariant is broken for each chain
-    // todo: just burning github runner time here, break monitoring out a separate job ? 
-    await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000));
     await checkDummyETH(config_1.CHAINS, bridgeBalances);
     await (0, helpers_1.sendDiscordMessage)(discordMessage + '```');
     console.log('All chains processed.');
