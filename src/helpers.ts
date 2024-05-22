@@ -147,14 +147,15 @@ export async function buildOPReport(withdraws: opWithdraw[], chain: ChainInfo): 
 
 // sends a message to a discord webhook
 export async function sendDiscordMessage(message: string): Promise<void> {
-  try {
-      await axios.post(DISCORD_WEBHOOK_URL, {
-        username: 'Bridge Bot',
-        content: message
-      });
-  } catch (error) {
-      console.error(`Failed to send message to discord: ${error}`);
-  }
+  console.log(message);
+  // try {
+  //     await axios.post(DISCORD_WEBHOOK_URL, {
+  //       username: 'Bridge Bot',
+  //       content: message
+  //     });
+  // } catch (error) {
+  //     console.error(`Failed to send message to discord: ${error}`);
+  // }
 }
 
 // calculate start block for fetching bridge transactions

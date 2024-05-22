@@ -9,7 +9,6 @@ const L2CrossDomainMessenger_json_1 = __importDefault(require("./abis/L2CrossDom
 const sdk_1 = require("@eth-optimism/sdk");
 const config_1 = require("./chains/config");
 const date_fns_1 = require("date-fns");
-const axios_1 = __importDefault(require("axios"));
 // Generating a CrossChainMessenger instance for a specific L2 chain
 function CreateCrossChainMessenger(chainConfig) {
     return new sdk_1.CrossChainMessenger({
@@ -124,15 +123,15 @@ async function buildOPReport(withdraws, chain) {
 exports.buildOPReport = buildOPReport;
 // sends a message to a discord webhook
 async function sendDiscordMessage(message) {
-    try {
-        await axios_1.default.post(config_1.DISCORD_WEBHOOK_URL, {
-            username: 'Bridge Bot',
-            content: message
-        });
-    }
-    catch (error) {
-        console.error(`Failed to send message to discord: ${error}`);
-    }
+    console.log(message);
+    // try {
+    //     await axios.post(DISCORD_WEBHOOK_URL, {
+    //       username: 'Bridge Bot',
+    //       content: message
+    //     });
+    // } catch (error) {
+    //     console.error(`Failed to send message to discord: ${error}`);
+    // }
 }
 exports.sendDiscordMessage = sendDiscordMessage;
 // calculate start block for fetching bridge transactions

@@ -4,6 +4,7 @@ import { BigNumber, ethers, utils } from "ethers";
 import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
 import { performSlowSync } from "./chains";
 import { sendDiscordMessage } from "./helpers";
+import { resolve } from "path";
 
 export async function handler(): Promise<void> {
   console.log('Lambda function has started execution.');
@@ -31,9 +32,10 @@ export async function handler(): Promise<void> {
     }
   }
 
+  // wait for 5 minutes to get time for mainnet and L2 state to sync before checking the invariant
+  await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+
   // check if dummy ETH invariant is broken for each chain
-  // todo: just burning github runner time here, break monitoring out a separate job ? 
-  setTimeout(() => console.log("waited 3 minutes for mainnet state to update"), 3 * 60 * 1000);  
   await checkDummyETH(CHAINS, bridgeBalances);
 
   await sendDiscordMessage(discordMessage + '```');

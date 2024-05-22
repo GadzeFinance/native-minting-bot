@@ -34,7 +34,7 @@ async function handler() {
     }
     // check if dummy ETH invariant is broken for each chain
     // todo: just burning github runner time here, break monitoring out a separate job ? 
-    setTimeout(() => console.log("waited 2 minutes for mainnet state to update"), 3 * 60 * 1000);
+    await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000));
     await checkDummyETH(config_1.CHAINS, bridgeBalances);
     await (0, helpers_1.sendDiscordMessage)(discordMessage + '```');
     console.log('All chains processed.');
