@@ -4,7 +4,6 @@ import { BigNumber, ethers, utils } from "ethers";
 import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
 import { performSlowSync } from "./chains";
 import { sendDiscordMessage } from "./helpers";
-import { resolve } from "path";
 
 export async function handler(): Promise<void> {
   console.log('Lambda function has started execution.');
@@ -58,15 +57,18 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
     const tokenIn = ETH_ADDRESS;
     const extraOptions = utils.arrayify("0x");
     const quoteResponse = await syncPool.quoteSync(tokenIn, extraOptions, false);
-    const [nativeFee, lzTokenFee] = quoteResponse
+    const [nativeFee, lzTokenFee] = quoteResponse as [BigNumber, BigNumber];
 
+    // LayerZero fee to be sent with the transaction to relay the message to the L1
     const fee = { nativeFee, lzTokenFee };
     
-    // TODO: add support for linea's sync call which requires that extraFee 
+    // some chains have an additional fee for the canonical bridge
+    const additionalFee = chain.name === 'linea' ? utils.parseEther("0.0001") : fee.nativeFee.toString();
+    
     const txResponse = await syncPoolWithSigner.sync(tokenIn, extraOptions, fee, {
-      value: fee.nativeFee.toString(),
+      value: additionalFee,
     });
-
+    
     const receipt = await txResponse.wait();
     console.log(`Transaction successful with hash: ${receipt.transactionHash}`);
   } else {
@@ -77,14 +79,14 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
 // begs for eth for any active chains where EOA is running low on funds
 async function eBegger(chains: ChainInfo[]): Promise<void> {
   const mainnetBalance = await MAINNET_PROVIDER.getBalance(MAINNET_WALLET.address);
-  if (mainnetBalance.lt(utils.parseEther("0.02"))) {
+  if (mainnetBalance.lt(utils.parseEther("0.03"))) {
     sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${MAINNET_WALLET.address}\` on mainnet is running low on ETH ❗️❗️`);
   }
   
   // L2
   for (const chain of chains) {
     const balance = await chain.provider.getBalance(chain.wallet.address);
-    if (balance.lt(utils.parseEther("0.02"))) {
+    if (balance.lt(utils.parseEther("0.03"))) {
       sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH ❗️❗️`);
     }
   }

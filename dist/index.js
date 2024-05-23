@@ -52,10 +52,12 @@ async function performFastSync(chain) {
         const extraOptions = ethers_1.utils.arrayify("0x");
         const quoteResponse = await syncPool.quoteSync(tokenIn, extraOptions, false);
         const [nativeFee, lzTokenFee] = quoteResponse;
+        // LayerZero fee to be sent with the transaction to relay the message to the L1
         const fee = { nativeFee, lzTokenFee };
-        // TODO: add support for linea's sync call which requires that extraFee 
+        // some chains have an additional fee for the canonical bridge
+        const additionalFee = chain.name === 'linea' ? ethers_1.utils.parseEther("0.0001") : fee.nativeFee.toString();
         const txResponse = await syncPoolWithSigner.sync(tokenIn, extraOptions, fee, {
-            value: fee.nativeFee.toString(),
+            value: additionalFee,
         });
         const receipt = await txResponse.wait();
         console.log(`Transaction successful with hash: ${receipt.transactionHash}`);
@@ -67,13 +69,13 @@ async function performFastSync(chain) {
 // begs for eth for any active chains where EOA is running low on funds
 async function eBegger(chains) {
     const mainnetBalance = await config_1.MAINNET_PROVIDER.getBalance(config_1.MAINNET_WALLET.address);
-    if (mainnetBalance.lt(ethers_1.utils.parseEther("0.02"))) {
+    if (mainnetBalance.lt(ethers_1.utils.parseEther("0.03"))) {
         (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** The bot wallet \`${config_1.MAINNET_WALLET.address}\` on mainnet is running low on ETH ❗️❗️`);
     }
     // L2
     for (const chain of chains) {
         const balance = await chain.provider.getBalance(chain.wallet.address);
-        if (balance.lt(ethers_1.utils.parseEther("0.02"))) {
+        if (balance.lt(ethers_1.utils.parseEther("0.03"))) {
             (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH ❗️❗️`);
         }
     }
