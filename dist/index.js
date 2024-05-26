@@ -54,10 +54,12 @@ async function performFastSync(chain) {
         const [nativeFee, lzTokenFee] = quoteResponse;
         // LayerZero fee to be sent with the transaction to relay the message to the L1
         const fee = { nativeFee, lzTokenFee };
-        // some chains have an additional fee for the canonical bridge
-        const additionalFee = chain.name === 'linea' ? ethers_1.utils.parseEther("0.0001") : fee.nativeFee.toString();
+        // some chains have additional fees to be paid to the canonical bridge for fast sync
+        const syncFee = chain.name === 'linea'
+            ? ethers_1.utils.parseEther("0.0001").add(fee.nativeFee)
+            : fee.nativeFee;
         const txResponse = await syncPoolWithSigner.sync(tokenIn, extraOptions, fee, {
-            value: additionalFee,
+            value: syncFee,
         });
         const receipt = await txResponse.wait();
         console.log(`Transaction successful with hash: ${receipt.transactionHash}`);

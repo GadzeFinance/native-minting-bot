@@ -117,7 +117,7 @@ async function buildOPReport(withdraws, chain) {
         }
     }
     const totalEther = parseFloat(ethers_1.utils.formatEther(totalWei)).toFixed(2);
-    res = `${chain.name}: ${totalEther} total ETH \n---------------------------------------\n${res}\n`;
+    res = `${chain.name}: ${totalEther} total ETH \n--------------------------------\n${res}\n`;
     console.log(res);
     return { totalWei, discordReport: res };
 }

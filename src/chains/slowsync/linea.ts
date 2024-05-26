@@ -84,7 +84,7 @@ export async function lineaSlowSync(chain: ChainInfo): Promise<SlowSyncResult> {
         }
     }
     const totalEther = parseFloat(utils.formatEther(totalWeiPending)).toFixed(2);
-    discordString = `linea: ${totalEther} total ETH \n---------------------------------------\n${discordString}\n`;
+    discordString = `linea: ${totalEther} total ETH \n--------------------------------\n${discordString}\n`;
     
     console.log(discordString);
     return { totalWei: totalWeiPending, discordReport: discordString };
