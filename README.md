@@ -38,7 +38,7 @@ project-root/
 │       ├── Contract1.json
 │       ├── Contract2.json
 │       └── ...
-└── dist/                  # Compiled JavaScript files to be deployed to lambda
+└── dist/                  # Compiled JavaScript files
 ```
 
 ## Running the Project
