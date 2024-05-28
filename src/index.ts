@@ -26,7 +26,7 @@ export async function handler(): Promise<void> {
       bridgeBalances[chain.name] = slowSyncResult.totalWei;
     } catch (error) {
       console.log(`Error occurred while syncing ${chain.name}: ${error}.`)
-      const truncatedError = (error as Error).toString(); 
+      const truncatedError = (error as Error).toString().substring(0, 200); 
       await sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${truncatedError}\`\`\``);
     }
   }
