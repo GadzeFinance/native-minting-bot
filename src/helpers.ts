@@ -157,6 +157,11 @@ export async function sendDiscordMessage(message: string): Promise<void> {
   }
 }
 
+// Truncates an error message to 200 characters for discord
+export function truncateError(error: unknown): string {
+  return (error as Error).toString().substring(0, 200);
+}
+
 // calculate start block for fetching bridge transactions
 // blockTimeSeconds - how often blocks are produced in seconds (all OP stack chains have 2s block time)
 // daysToIndex - The amount of days to index back for withdraw events
