@@ -3,7 +3,7 @@ import DummyToken from "./abis/DummyToken.json";
 import { BigNumber, ethers, utils } from "ethers";
 import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
 import { performSlowSync } from "./chains";
-import { sendDiscordMessage } from "./helpers";
+import { sendDiscordMessage, truncateError } from "./helpers";
 
 export async function handler(): Promise<void> {
   console.log('Lambda function has started execution.');
@@ -26,8 +26,7 @@ export async function handler(): Promise<void> {
       bridgeBalances[chain.name] = slowSyncResult.totalWei;
     } catch (error) {
       console.log(`Error occurred while syncing ${chain.name}: ${error}.`)
-      const truncatedError = (error as Error).toString().substring(0, 200); 
-      await sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${truncatedError}\`\`\``);
+      await sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${truncateError(error)}\`\`\``);
     }
   }
 
@@ -67,8 +66,15 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
       ? utils.parseEther("0.0001").add(fee.nativeFee)
       : fee.nativeFee;
     
+    // Increase the estimated gas by 10% for sync transaction call
+    const syncEstimatedGas = await syncPoolWithSigner.estimateGas.sync(tokenIn, extraOptions, fee, {
+      value: syncFee,
+    });
+    const modifiedGasLimit = syncEstimatedGas.add(syncEstimatedGas.mul(10).div(100));
+
     const txResponse = await syncPoolWithSigner.sync(tokenIn, extraOptions, fee, {
       value: syncFee,
+      gasLimit: modifiedGasLimit
     });
     
     const receipt = await txResponse.wait();
@@ -80,17 +86,22 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
 
 // begs for eth for any active chains where EOA is running low on funds
 async function eBegger(chains: ChainInfo[]): Promise<void> {
-  const mainnetBalance = await MAINNET_PROVIDER.getBalance(MAINNET_WALLET.address);
-  if (mainnetBalance.lt(utils.parseEther("0.03"))) {
-    sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${MAINNET_WALLET.address}\` on mainnet is running low on ETH ❗️❗️`);
-  }
-  
-  // L2
-  for (const chain of chains) {
-    const balance = await chain.provider.getBalance(chain.wallet.address);
-    if (balance.lt(utils.parseEther("0.03"))) {
-      sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH ❗️❗️`);
+  try {
+    const mainnetBalance = await MAINNET_PROVIDER.getBalance(MAINNET_WALLET.address);
+    if (mainnetBalance.lt(utils.parseEther("0.03"))) {
+      sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${MAINNET_WALLET.address}\` on mainnet is running low on ETH ❗️❗️`);
     }
+    
+    // L2
+    for (const chain of chains) {
+      const balance = await chain.provider.getBalance(chain.wallet.address);
+      if (balance.lt(utils.parseEther("0.03"))) {
+        sendDiscordMessage(`❗️❗️ **Alert:** The bot wallet \`${chain.wallet.address}\` is running low on ${chain.name} ETH ❗️❗️`);
+      }
+    }
+  } catch (error) {
+    console.log(`Error occurred while checking EOA balance: ${error}.`);
+    sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while checking EOA balance.❗️❗️ \`\`\`${truncateError(error)}\`\`\``);
   }
 }
 
@@ -100,16 +111,21 @@ interface BridgeBalances {
 
 // checks the invariant for each chain that `dummyETH.TotalSupply` == `ETH in Withdraw Process`
 async function checkDummyETH(chains: ChainInfo[], bridgeBalances: BridgeBalances): Promise<void> {
-  for (const chain of chains) {
-    const dummyEthContract = new ethers.Contract(chain.dummyEthAddress, DummyToken, MAINNET_PROVIDER);
-    const dummyEthSupply = await dummyEthContract.totalSupply();
-    const bridgeBalance = bridgeBalances[chain.name];
-    const difference = dummyEthSupply.sub(bridgeBalance).abs();
-
-    
-    if (difference.gte(utils.parseEther("1"))) {
-      sendDiscordMessage(`❗️❗️ **Alert:** Invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
+  try {
+    for (const chain of chains) {
+      const dummyEthContract = new ethers.Contract(chain.dummyEthAddress, DummyToken, MAINNET_PROVIDER);
+      const dummyEthSupply = await dummyEthContract.totalSupply();
+      const bridgeBalance = bridgeBalances[chain.name];
+      const difference = dummyEthSupply.sub(bridgeBalance).abs();
+  
+      
+      if (difference.gte(utils.parseEther("1"))) {
+        sendDiscordMessage(`❗️❗️ **Alert:** Invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
+      }
     }
+  } catch (error) {
+    console.log(`Error occurred while checking dummy ETH invariant: ${error}.`);
+    sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant.❗️❗️ \`\`\`${truncateError(truncateError)}\`\`\``);
   }
 }
 
