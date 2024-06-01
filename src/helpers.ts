@@ -145,7 +145,7 @@ export async function buildOPReport(withdraws: opWithdraw[], chain: ChainInfo): 
   return { totalWei, discordReport: res };
 }
 
-// sends a message to a discord webhook
+// Sends a message to the `cross-chain` channel
 export async function sendDiscordMessage(message: string): Promise<void> {
   try {
       await axios.post(DISCORD_WEBHOOK_URL, {
