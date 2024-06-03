@@ -125,7 +125,7 @@ async function checkDummyETH(chains: ChainInfo[], bridgeBalances: BridgeBalances
     }
   } catch (error) {
     console.log(`Error occurred while checking dummy ETH invariant: ${error}.`);
-    sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant.❗️❗️ \`\`\`${truncateError(truncateError)}\`\`\``);
+    sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant.❗️❗️ \`\`\`${truncateError(error)}\`\`\``);
   }
 }
 
