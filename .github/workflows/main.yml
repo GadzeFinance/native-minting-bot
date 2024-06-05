@@ -3,9 +3,6 @@ name: Run L2 Bot
 on:
   schedule:
     - cron: '0 7,13,19 * * *' # Runs at 7:00 AM, 1:00 PM, and 7:00 PM UTC
-  push:
-    branches:
-      - main
 
 jobs:
   run-typescript-project:
