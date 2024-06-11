@@ -28,6 +28,7 @@ async function handler() {
         }
         catch (error) {
             console.log(`Error occurred while syncing ${chain.name}: ${error}.`);
+            bridgeBalances[chain.name] = undefined;
             await (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Error occurred while syncing ${chain.name}.❗️❗️ \`\`\`${(0, helpers_1.truncateError)(error)}\`\`\``);
         }
     }
@@ -95,20 +96,25 @@ async function eBegger(chains) {
 }
 // checks the invariant for each chain that `dummyETH.TotalSupply` == `ETH in Withdraw Process`
 async function checkDummyETH(chains, bridgeBalances) {
-    try {
-        for (const chain of chains) {
+    for (const chain of chains) {
+        try {
+            console.log(`Checking dummy ETH invariant for chain: ${chain.name}.`);
+            if (!bridgeBalances[chain.name]) {
+                console.log(`Skipping dummy ETH invariant check for chain: ${chain.name}.`);
+                continue;
+            }
             const dummyEthContract = new ethers_1.ethers.Contract(chain.dummyEthAddress, DummyToken_json_1.default, config_1.MAINNET_PROVIDER);
             const dummyEthSupply = await dummyEthContract.totalSupply();
             const bridgeBalance = bridgeBalances[chain.name];
             const difference = dummyEthSupply.sub(bridgeBalance).abs();
             if (difference.gte(ethers_1.utils.parseEther("1"))) {
-                (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(ethers_1.utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${parseFloat(ethers_1.utils.formatEther(bridgeBalance)).toFixed(2)} ❗️❗️`);
+                (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Invariant for ${chain.name} is broken. Dummy ETH total supply is ${parseFloat(ethers_1.utils.formatEther(dummyEthSupply)).toFixed(2)} but the bridge balance is ${bridgeBalance ? parseFloat(ethers_1.utils.formatEther(bridgeBalance)).toFixed(2) : "undefined"} ❗️❗️`);
             }
         }
-    }
-    catch (error) {
-        console.log(`Error occurred while checking dummy ETH invariant: ${error}.`);
-        (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant.❗️❗️ \`\`\`${(0, helpers_1.truncateError)(error)}\`\`\``);
+        catch (error) {
+            console.log(`Error occurred while checking dummy ETH invariant for chain: ${chain.name}. ${error}.`);
+            (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant for chain: ${chain.name}.❗️❗️ \`\`\`${(0, helpers_1.truncateError)(error)}\`\`\``);
+        }
     }
 }
 handler();
