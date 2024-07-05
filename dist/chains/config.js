@@ -28,7 +28,7 @@ exports.CHAINS = [
     },
     {
         name: 'linea',
-        provider: new ethers_1.providers.JsonRpcProvider('https://linea-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52'),
+        provider: new ethers_1.providers.JsonRpcProvider('https://linea-mainnet.g.alchemy.com/v2/NDkFTWJOHkUOfPD60wWD11yzwrNPsnr_'),
         wallet: new ethers_1.Wallet(exports.PRIVATE_KEY, new ethers_1.providers.JsonRpcProvider('https://linea-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52')),
         syncPoolAddress: "0x823106E745A62D0C2FC4d27644c62aDE946D9CCa",
         dummyEthAddress: "0x61Ff310aC15a517A846DA08ac9f9abf2A0f9A2bf"
