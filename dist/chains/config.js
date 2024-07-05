@@ -14,7 +14,7 @@ exports.CHAINS = [
     },
     {
         name: 'base',
-        provider: new ethers_1.providers.JsonRpcProvider('https://base-mainnet.g.alchemy.com/v2/tb6jud_eQqvR2JK8NoUlLIoBf9P-oqd-'),
+        provider: new ethers_1.providers.JsonRpcProvider('https://base-mainnet.g.alchemy.com/v2/JLScbmf_PtNhzCkrEF6geTxuQGu0ReEI'),
         wallet: new ethers_1.Wallet(exports.PRIVATE_KEY, new ethers_1.providers.JsonRpcProvider('https://base-mainnet.g.alchemy.com/v2/tb6jud_eQqvR2JK8NoUlLIoBf9P-oqd-')),
         syncPoolAddress: "0xc38e046dFDAdf15f7F56853674242888301208a5",
         dummyEthAddress: "0x0295E0CE709723FB25A28b8f67C54a488BA5aE46"
