@@ -20,11 +20,6 @@ export async function handler(): Promise<void> {
     console.log(`Processing transactions for chain: ${chain.name}`);
     // perform fast sync and slow sync for each chain and return any errors to discord
 
-    if (chain.name === 'linea') {
-      await sendDiscordMessage(`🔔 Caps hit for linea, skipping sync`);
-      continue;
-    }
-
     try {
       await performFastSync(chain);
       const slowSyncResult =  await performSlowSync(chain);
