@@ -48,7 +48,7 @@ project-root/
     pnpm install
     ```
 
-2. **Set Environment Variables**: add the `PRIVATE_KEY` for the EOA assiocated with the bot and the `ALCHEMY_KEY` to an `.env` file. The values are stored in github secrets for GitHub Actions to access.
+2. **Set Environment Variables**: add the `PRIVATE_KEY` for the EOA assiocated with the bot and the `ALCHEMY_KEY` to an `.env` file. The values are stored in GitHub Secrets for GitHub Actions to access.
 
 4. **Compile and Run**: Compile the TypeScript code and run the bot using:
     ```sh
