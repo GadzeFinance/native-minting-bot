@@ -19,7 +19,7 @@ export async function handler(): Promise<void> {
   for (const chain of CHAINS) {
     console.log(`Processing transactions for chain: ${chain.name}`);
     // perform fast sync and slow sync for each chain and return any errors to discord
-
+    
     try {
       await performFastSync(chain);
       const slowSyncResult =  await performSlowSync(chain);

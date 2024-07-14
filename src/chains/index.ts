@@ -5,10 +5,11 @@ import { baseSlowSync } from './slowsync/base';
 import { lineaSlowSync } from './slowsync/linea';
 import { BigNumber } from 'ethers';
 
-// all chain slow syncs should return the total wei in the bridge and a formatted discord report string
+// all chain slow syncs should return the total wei in the bridge and a formatted discord 
+// report string of all the current withdraws from this chain
 export interface SlowSyncResult {
     totalWei: BigNumber,
-    discordReport: string
+    discordReport: string 
 }
 
 export async function performSlowSync(chain: ChainInfo): Promise<SlowSyncResult> {
