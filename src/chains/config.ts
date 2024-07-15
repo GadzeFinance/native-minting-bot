@@ -2,7 +2,7 @@ import { providers, Wallet } from 'ethers';
 require('dotenv').config();
 
 export const PRIVATE_KEY: string = process.env.PRIVATE_KEY!;
-export const ALCHEMY_KEY: string = process.env.ALCHEMY_KEY!;
+export const ALCHEMY_KEY: string = "njLwFmiBufXJFRWQ02y9F1EMdkfNtkMO";
 
 export interface ChainInfo {
   name: string;

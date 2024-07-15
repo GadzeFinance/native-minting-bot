@@ -4,7 +4,7 @@ exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOO
 const ethers_1 = require("ethers");
 require('dotenv').config();
 exports.PRIVATE_KEY = process.env.PRIVATE_KEY;
-exports.ALCHEMY_KEY = process.env.ALCHEMY_KEY;
+exports.ALCHEMY_KEY = "njLwFmiBufXJFRWQ02y9F1EMdkfNtkMO";
 exports.CHAINS = [
     {
         name: 'blast',
