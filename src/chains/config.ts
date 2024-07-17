@@ -13,13 +13,13 @@ export interface ChainInfo {
 }
  
 export const CHAINS: ChainInfo[] = [
-  {
-    name: 'blast',
-    provider: new providers.JsonRpcProvider(`https://blast-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
-    wallet: new Wallet(PRIVATE_KEY, new providers.JsonRpcProvider(`https://blast-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`)),
-    syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B", 
-    dummyEthAddress: "0x83998e169026136760bE6AF93e776C2F352D4b28"
-  },
+  // {
+  //   name: 'blast',
+  //   provider: new providers.JsonRpcProvider(`https://blast-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
+  //   wallet: new Wallet(PRIVATE_KEY, new providers.JsonRpcProvider(`https://blast-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`)),
+  //   syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B", 
+  //   dummyEthAddress: "0x83998e169026136760bE6AF93e776C2F352D4b28"
+  // },
   {
     name: 'base',
     provider: new providers.JsonRpcProvider(`https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
