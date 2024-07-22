@@ -13,13 +13,13 @@ exports.CHAINS = [
     //   syncPoolAddress: "0x52c4221Cb805479954CDE5accfF8C4DcaF96623B", 
     //   dummyEthAddress: "0x83998e169026136760bE6AF93e776C2F352D4b28"
     // },
-    {
-        name: 'base',
-        provider: new ethers_1.providers.JsonRpcProvider(`https://base-mainnet.g.alchemy.com/v2/${exports.ALCHEMY_KEY}`),
-        wallet: new ethers_1.Wallet(exports.PRIVATE_KEY, new ethers_1.providers.JsonRpcProvider(`https://base-mainnet.g.alchemy.com/v2/${exports.ALCHEMY_KEY}`)),
-        syncPoolAddress: "0xc38e046dFDAdf15f7F56853674242888301208a5",
-        dummyEthAddress: "0x0295E0CE709723FB25A28b8f67C54a488BA5aE46"
-    },
+    // {
+    //   name: 'base',
+    //   provider: new providers.JsonRpcProvider(`https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
+    //   wallet: new Wallet(PRIVATE_KEY, new providers.JsonRpcProvider(`https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`)),
+    //   syncPoolAddress: "0xc38e046dFDAdf15f7F56853674242888301208a5",
+    //   dummyEthAddress: "0x0295E0CE709723FB25A28b8f67C54a488BA5aE46"
+    // },
     {
         name: 'mode',
         provider: new ethers_1.providers.JsonRpcProvider('https://mainnet.mode.network'),
