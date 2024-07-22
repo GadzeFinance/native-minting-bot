@@ -27,8 +27,8 @@ const MessageSentABI = [{
 const lineaMessageSentInterface = new ethers_1.utils.Interface(MessageSentABI);
 const syncPoolInterface = new ethers_1.utils.Interface(L2SyncPool_json_1.default);
 const sdk = new linea_sdk_1.LineaSDK({
-    l1RpcUrl: "https://mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52",
-    l2RpcUrl: 'https://linea-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52',
+    l1RpcUrl: config_1.MAINNET_RPC_URL,
+    l2RpcUrl: `https://linea-mainnet.g.alchemy.com/v2/${config_1.ALCHEMY_KEY}`,
     l1SignerPrivateKey: config_1.PRIVATE_KEY,
     l2SignerPrivateKey: config_1.PRIVATE_KEY,
     network: "linea-mainnet",

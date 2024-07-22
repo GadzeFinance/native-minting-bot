@@ -12,6 +12,10 @@ const chains_1 = require("./chains");
 const helpers_1 = require("./helpers");
 async function handler() {
     console.log('Lambda function has started execution.');
+    if (config_1.STANDBY) {
+        await standby(config_1.CHAINS);
+        return;
+    }
     // check if EOA is running low on funds
     await eBegger(config_1.CHAINS);
     const bridgeBalances = {};
@@ -116,5 +120,14 @@ async function checkDummyETH(chains, bridgeBalances) {
             (0, helpers_1.sendDiscordMessage)(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant for chain: ${chain.name}.❗️❗️ \`\`\`${(0, helpers_1.truncateError)(error)}\`\`\``);
         }
     }
+}
+async function standby(chains) {
+    let standbyMessage = '**Standby Mode (Sync Pool Balance By Chain)** \n```';
+    for (const chain of chains) {
+        const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
+        standbyMessage += `${chain.name}: ${ethers_1.utils.formatEther(syncPoolBalance)} ETH\n`;
+    }
+    standbyMessage += '```';
+    (0, helpers_1.sendDiscordMessage)(standbyMessage);
 }
 handler();

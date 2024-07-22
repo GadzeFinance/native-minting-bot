@@ -1,12 +1,17 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
 import DummyToken from "./abis/DummyToken.json";
 import { BigNumber, ethers, utils } from "ethers";
-import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
+import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET, STANDBY } from "./chains/config";
 import { performSlowSync } from "./chains";
 import { sendDiscordMessage, truncateError } from "./helpers";
 
 export async function handler(): Promise<void> {
   console.log('Lambda function has started execution.');
+
+  if (STANDBY) {
+    await standby(CHAINS);
+    return
+  }
 
   // check if EOA is running low on funds
   await eBegger(CHAINS);
@@ -135,6 +140,16 @@ async function checkDummyETH(chains: ChainInfo[], bridgeBalances: BridgeBalances
       sendDiscordMessage(`❗️❗️ **Alert:** Error occurred while checking dummy ETH invariant for chain: ${chain.name}.❗️❗️ \`\`\`${truncateError(error)}\`\`\``);
     }
   }
+}
+
+async function standby(chains: ChainInfo[]): Promise<void> {
+  let standbyMessage = '**Standby Mode (Sync Pool Balance By Chain)** \n```';
+  for (const chain of chains) {
+    const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
+    standbyMessage += `${chain.name}: ${utils.formatEther(syncPoolBalance)} ETH\n`;
+  }
+  standbyMessage += '```';
+  sendDiscordMessage(standbyMessage);
 }
 
 handler();

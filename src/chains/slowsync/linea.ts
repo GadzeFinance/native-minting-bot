@@ -1,6 +1,6 @@
 
 import { LineaSDK, Message, OnChainMessageStatus } from "@consensys/linea-sdk";
-import { ChainInfo, PRIVATE_KEY } from "../config";
+import { ChainInfo, PRIVATE_KEY, ALCHEMY_KEY, MAINNET_RPC_URL } from "../config";
 import { calculateStartBlock, fetchSyncPoolTxs } from "../../helpers";
 import L2SyncPool from "../../abis/L2SyncPool.json"
 import { BigNumber, utils } from "ethers";
@@ -27,8 +27,8 @@ const lineaMessageSentInterface = new utils.Interface(MessageSentABI);
 const syncPoolInterface = new utils.Interface(L2SyncPool)
 
 const sdk = new LineaSDK({
-    l1RpcUrl: "https://mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52",
-    l2RpcUrl: 'https://linea-mainnet.infura.io/v3/3cfca4bf32d54476ae33585ba8983c52',
+    l1RpcUrl: MAINNET_RPC_URL,
+    l2RpcUrl: `https://linea-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`,
     l1SignerPrivateKey: PRIVATE_KEY,
     l2SignerPrivateKey: PRIVATE_KEY,
     network: "linea-mainnet",
