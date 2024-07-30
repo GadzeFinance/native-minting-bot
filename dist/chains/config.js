@@ -45,4 +45,5 @@ exports.DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1237225752512958
 exports.ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 // OP stack precompile contracts
 exports.L2_CROSS_DOMAIN_MESSENGER = "0x4200000000000000000000000000000000000007";
-exports.STANDBY = true;
+// Configurable variable to pause the processing of withdrawals from L2s 
+exports.STANDBY = false;

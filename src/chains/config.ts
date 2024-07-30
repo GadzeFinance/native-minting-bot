@@ -56,4 +56,5 @@ export const ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 // OP stack precompile contracts
 export const L2_CROSS_DOMAIN_MESSENGER = "0x4200000000000000000000000000000000000007"
 
-export const STANDBY = true;
+// Configurable variable to pause the processing of withdrawals from L2s 
+export const STANDBY = false;

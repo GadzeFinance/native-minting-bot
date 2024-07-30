@@ -121,6 +121,7 @@ async function checkDummyETH(chains, bridgeBalances) {
         }
     }
 }
+// function that runs when the bot is in standby mode not processing withdrawals
 async function standby(chains) {
     let standbyMessage = '**Standby Mode (Sync Pool Balance By Chain)** \n```';
     for (const chain of chains) {
