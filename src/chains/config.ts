@@ -47,7 +47,6 @@ export const CHAINS: ChainInfo[] = [
 export const MAINNET_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`;
 export const MAINNET_PROVIDER = new providers.JsonRpcProvider(MAINNET_RPC_URL);
 export const MAINNET_WALLET = new Wallet(PRIVATE_KEY, MAINNET_PROVIDER);
-export const ETHERSCAN_PROVIDER = new providers.EtherscanProvider('homestead', 'JGN3S8FGA23GJ8MVYUGVUJ5Z2RYH4QYUJ7');
 
 // Discord webhook
 export const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1237225752512958525/7w8cw_tO1iGK4csPgVq1K8Ajjt0wSG5NT5TnnDtGW_CQ61Zi6_nEtCYvM9Rt-95cJzKp"

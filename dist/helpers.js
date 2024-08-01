@@ -57,7 +57,14 @@ async function fetchOPBridgeTxs(initialStartBlock, chain, crossChainMessenger) {
             fromBlock: startBlock,
             toBlock: endBlock
         };
-        const logs = await chain.provider.getLogs(filter);
+        let logs;
+        try {
+            logs = await chain.provider.getLogs(filter);
+        }
+        catch (error) {
+            console.error(`Failed to fetch logs from block range ${startBlock} - ${endBlock}: ${error}`);
+            continue;
+        }
         withdrawLogs.push(...logs);
         console.log(`Found ${logs.length} logs in block range ${startBlock} - ${endBlock}`);
     }

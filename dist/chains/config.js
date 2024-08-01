@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STANDBY = exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.ETHERSCAN_PROVIDER = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.ALCHEMY_KEY = exports.PRIVATE_KEY = void 0;
+exports.STANDBY = exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.ALCHEMY_KEY = exports.PRIVATE_KEY = void 0;
 const ethers_1 = require("ethers");
 require('dotenv').config();
 exports.PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -39,7 +39,6 @@ exports.CHAINS = [
 exports.MAINNET_RPC_URL = `https://eth-mainnet.g.alchemy.com/v2/${exports.ALCHEMY_KEY}`;
 exports.MAINNET_PROVIDER = new ethers_1.providers.JsonRpcProvider(exports.MAINNET_RPC_URL);
 exports.MAINNET_WALLET = new ethers_1.Wallet(exports.PRIVATE_KEY, exports.MAINNET_PROVIDER);
-exports.ETHERSCAN_PROVIDER = new ethers_1.providers.EtherscanProvider('homestead', 'JGN3S8FGA23GJ8MVYUGVUJ5Z2RYH4QYUJ7');
 // Discord webhook
 exports.DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1237225752512958525/7w8cw_tO1iGK4csPgVq1K8Ajjt0wSG5NT5TnnDtGW_CQ61Zi6_nEtCYvM9Rt-95cJzKp";
 exports.ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
