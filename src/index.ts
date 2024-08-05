@@ -12,7 +12,7 @@ export async function handler(): Promise<void> {
   const gasPriceInGwei = ethers.utils.formatUnits(gasPrice, 'gwei');
 
   if (parseFloat(gasPriceInGwei) > 25) {
-    console.log(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
+    await sendDiscordMessage(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
     await standby(CHAINS);
     return
   }
