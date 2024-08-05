@@ -12,7 +12,10 @@ const chains_1 = require("./chains");
 const helpers_1 = require("./helpers");
 async function handler() {
     console.log('Lambda function has started execution.');
-    if (config_1.STANDBY) {
+    const gasPrice = await config_1.MAINNET_PROVIDER.getGasPrice();
+    const gasPriceInGwei = ethers_1.ethers.utils.formatUnits(gasPrice, 'gwei');
+    if (parseFloat(gasPriceInGwei) > 25) {
+        console.log(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
         await standby(config_1.CHAINS);
         return;
     }

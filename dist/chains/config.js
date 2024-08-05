@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STANDBY = exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.ALCHEMY_KEY = exports.PRIVATE_KEY = void 0;
+exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.ALCHEMY_KEY = exports.PRIVATE_KEY = void 0;
 const ethers_1 = require("ethers");
 require('dotenv').config();
 exports.PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -44,5 +44,3 @@ exports.DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1237225752512958
 exports.ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 // OP stack precompile contracts
 exports.L2_CROSS_DOMAIN_MESSENGER = "0x4200000000000000000000000000000000000007";
-// Configurable variable to pause the processing of withdrawals from L2s 
-exports.STANDBY = false;

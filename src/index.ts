@@ -1,14 +1,18 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
 import DummyToken from "./abis/DummyToken.json";
 import { BigNumber, ethers, utils } from "ethers";
-import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET, STANDBY } from "./chains/config";
+import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
 import { performSlowSync } from "./chains";
 import { sendDiscordMessage, truncateError } from "./helpers";
 
 export async function handler(): Promise<void> {
   console.log('Lambda function has started execution.');
 
-  if (STANDBY) {
+  const gasPrice = await MAINNET_PROVIDER.getGasPrice();
+  const gasPriceInGwei = ethers.utils.formatUnits(gasPrice, 'gwei');
+
+  if (parseFloat(gasPriceInGwei) > 25) {
+    console.log(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
     await standby(CHAINS);
     return
   }
