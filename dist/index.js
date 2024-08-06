@@ -15,7 +15,7 @@ async function handler() {
     const gasPrice = await config_1.MAINNET_PROVIDER.getGasPrice();
     const gasPriceInGwei = ethers_1.ethers.utils.formatUnits(gasPrice, 'gwei');
     if (parseFloat(gasPriceInGwei) > 25) {
-        console.log(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
+        await (0, helpers_1.sendDiscordMessage)(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
         await standby(config_1.CHAINS);
         return;
     }
