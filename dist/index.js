@@ -19,6 +19,11 @@ async function handler() {
         await standby(config_1.CHAINS);
         return;
     }
+    if (config_1.vampire.paused()) {
+        await (0, helpers_1.sendDiscordMessage)(`Vampire contract is paused. Bot will not execute transactions.`);
+        await standby(config_1.CHAINS);
+        return;
+    }
     // check if EOA is running low on funds
     await eBegger(config_1.CHAINS);
     const bridgeBalances = {};
@@ -51,6 +56,10 @@ exports.handler = handler;
 async function performFastSync(chain) {
     const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
     console.log(`Sync pool balance for chain: ${chain.name} is ${ethers_1.utils.formatEther(syncPoolBalance)} ETH.`);
+    if (config_1.vampire.isDepositCapReached(chain.dummyEthAddress, syncPoolBalance)) {
+        await (0, helpers_1.sendDiscordMessage)(`Deposit cap on vampire reached for chain: ${chain.name}. Skipping fast sync.`);
+        return;
+    }
     if (syncPoolBalance.gt(ethers_1.utils.parseEther("1000"))) {
         console.log(`Executing fast sync for chain: ${chain.name}.`);
         const syncPool = new ethers_1.ethers.Contract(chain.syncPoolAddress, L2SyncPool_json_1.default, chain.provider);

@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.ALCHEMY_KEY = exports.PRIVATE_KEY = void 0;
+exports.vampire = exports.L2_CROSS_DOMAIN_MESSENGER = exports.ETH_ADDRESS = exports.DISCORD_WEBHOOK_URL = exports.MAINNET_WALLET = exports.MAINNET_PROVIDER = exports.MAINNET_RPC_URL = exports.CHAINS = exports.ALCHEMY_KEY = exports.PRIVATE_KEY = void 0;
 const ethers_1 = require("ethers");
+const Vampire_json_1 = __importDefault(require("../abis/Vampire.json"));
 require('dotenv').config();
 exports.PRIVATE_KEY = process.env.PRIVATE_KEY;
 exports.ALCHEMY_KEY = "njLwFmiBufXJFRWQ02y9F1EMdkfNtkMO";
@@ -44,3 +48,5 @@ exports.DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1237225752512958
 exports.ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 // OP stack precompile contracts
 exports.L2_CROSS_DOMAIN_MESSENGER = "0x4200000000000000000000000000000000000007";
+// general contracts
+exports.vampire = new ethers_1.Contract("0x9FFDF407cDe9a93c47611799DA23924Af3EF764F", Vampire_json_1.default, exports.MAINNET_PROVIDER);

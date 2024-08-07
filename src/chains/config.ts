@@ -1,4 +1,5 @@
-import { providers, Wallet } from 'ethers';
+import { providers, Wallet, Contract } from 'ethers';
+import vampireABI from "../abis/Vampire.json";
 require('dotenv').config();
 
 export const PRIVATE_KEY: string = process.env.PRIVATE_KEY!;
@@ -54,3 +55,6 @@ export const ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
 // OP stack precompile contracts
 export const L2_CROSS_DOMAIN_MESSENGER = "0x4200000000000000000000000000000000000007"
+
+// general contracts
+export const vampire = new Contract("0x9FFDF407cDe9a93c47611799DA23924Af3EF764F", vampireABI, MAINNET_PROVIDER)

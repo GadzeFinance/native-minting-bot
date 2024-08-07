@@ -1,7 +1,7 @@
 import L2SyncPool from "./abis/L2SyncPool.json";
 import DummyToken from "./abis/DummyToken.json";
 import { BigNumber, ethers, utils } from "ethers";
-import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET } from "./chains/config";
+import { ChainInfo, CHAINS, ETH_ADDRESS, MAINNET_PROVIDER, MAINNET_WALLET, vampire } from "./chains/config";
 import { performSlowSync } from "./chains";
 import { sendDiscordMessage, truncateError } from "./helpers";
 
@@ -11,8 +11,14 @@ export async function handler(): Promise<void> {
   const gasPrice = await MAINNET_PROVIDER.getGasPrice();
   const gasPriceInGwei = ethers.utils.formatUnits(gasPrice, 'gwei');
 
-  if (parseFloat(gasPriceInGwei) > 25 || true) {
+  if (parseFloat(gasPriceInGwei) > 25) {
     await sendDiscordMessage(`Mainnet gas price is too high: ${gasPriceInGwei} Gwei. Bot will not execute transactions.`);
+    await standby(CHAINS);
+    return
+  }
+
+  if (vampire.paused()) {
+    await sendDiscordMessage(`Vampire contract is paused. Bot will not execute transactions.`);
     await standby(CHAINS);
     return
   }
@@ -57,6 +63,11 @@ async function performFastSync(chain: ChainInfo): Promise<void> {
   const syncPoolBalance = await chain.provider.getBalance(chain.syncPoolAddress);
 
   console.log(`Sync pool balance for chain: ${chain.name} is ${utils.formatEther(syncPoolBalance)} ETH.`);
+
+  if (vampire.isDepositCapReached(chain.dummyEthAddress, syncPoolBalance)) {
+    await sendDiscordMessage(`Deposit cap on vampire reached for chain: ${chain.name}. Skipping fast sync.`);
+    return;
+  }
 
   if (syncPoolBalance.gt(utils.parseEther("1000"))) {
     console.log(`Executing fast sync for chain: ${chain.name}.`);
